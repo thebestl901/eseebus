@@ -1,0 +1,71 @@
+/* Accessibility: minimum touch targets */
+.btn-touch {
+  min-width: 48px;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.keypad-btn {
+  min-width: 0;
+  width: 100%;
+  min-height: 56px;
+  font-size: 1.5rem;
+  font-weight: 600;
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background 0.15s;
+  padding: 0;
+}
+
+[data-contrast='high'] .keypad-btn {
+  border-width: 3px;
+  font-weight: 700;
+}
+
+.keypad-btn:active {
+  background: var(--bg-secondary);
+}
+
+.keypad--smart .keypad-btn--valid {
+  color: var(--text-primary);
+  border-color: var(--text-primary);
+  font-weight: 700;
+}
+
+.keypad--smart .keypad-btn--disabled {
+  opacity: 0.3;
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+  cursor: default;
+}
+
+.keypad--smart .keypad-btn--disabled:active {
+  background: var(--bg-primary);
+}
+
+.keypad-btn--action {
+  background: var(--bg-secondary);
+  font-size: 1rem;
+}
+
+.eta-number {
+  color: var(--eta-color);
+  font-size: calc(2.25rem * var(--font-scale));
+  font-weight: 700;
+  line-height: 1;
+}
+
+.route-number {
+  font-size: calc(1.75rem * var(--font-scale));
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+[data-contrast='high'] .route-number,
+[data-contrast='high'] .eta-number {
+  font-weight: 800;
+}

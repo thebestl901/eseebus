@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Eseebus">
+  <circle cx="256" cy="256" r="256" fill="#E60012"/>
+  <text
+    x="256"
+    y="218"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#FFFFFF"
+    font-family="system-ui, -apple-system, 'Helvetica Neue', 'Arial Black', Arial, sans-serif"
+    font-weight="800"
+    font-size="96"
+    letter-spacing="2"
+  >Esee</text>
+  <text
+    x="256"
+    y="318"
+    text-anchor="middle"
+    dominant-baseline="middle"
+    fill="#FFFFFF"
+    font-family="system-ui, -apple-system, 'Helvetica Neue', 'Arial Black', Arial, sans-serif"
+    font-weight="800"
+    font-size="88"
+    letter-spacing="2"
+  >bus</text>
+</svg>

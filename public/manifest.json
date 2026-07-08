@@ -1,0 +1,25 @@
+{
+  "name": "巴士報站網頁版",
+  "short_name": "巴士報站",
+  "description": "大字體、無廣告的香港巴士到站查詢",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#E60012",
+  "theme_color": "#E60012",
+  "orientation": "portrait",
+  "lang": "zh-HK",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/kmb-app-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
