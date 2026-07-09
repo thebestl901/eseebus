@@ -91,7 +91,7 @@ const zhTW = {
   iconKmb: '九巴 App',
   iconOnboardingHint: '分頁標籤圖示會即時更新。',
   iconIphoneWarning:
-    'iPhone／iPad 使用者：請在瀏覽器開啟本網頁，於「重新查看使用說明」中選好圖示並按「開始使用」後，再重新加入主畫面或安裝應用程式。',
+    '如要更改圖示，請先匯出備份，在瀏覽器開啟本網頁，於「重新查看使用說明」中選好圖示並按「開始使用」後，再重新加入主畫面或安裝應用程式及匯入備份。',
   etaDisplay: '顯示時間',
   etaMinutes: '剩餘分鐘',
   etaClock: '實際時間',
@@ -216,7 +216,7 @@ const zhCN: Record<TranslationKey, string> = {
   iconKmb: '九巴 App',
   iconOnboardingHint: '分页标签图标会即时更新。',
   iconIphoneWarning:
-    'iPhone／iPad 用户：请在浏览器打开本网页，于「重新查看使用说明」中选好图标并按「开始使用」后，再重新加入主画面或安装应用程序。',
+    '如要更改图标，请先导出备份，在浏览器打开本网页，于「重新查看使用说明」中选好图标并按「开始使用」后，再重新加入主画面或安装应用程序及导入备份。',
   etaDisplay: '显示时间',
   etaMinutes: '剩余分钟',
   etaClock: '实际时间',
@@ -342,7 +342,7 @@ const en: Record<TranslationKey, string> = {
   iconKmb: 'KMB App',
   iconOnboardingHint: 'The browser tab icon updates immediately.',
   iconIphoneWarning:
-    'iPhone / iPad: open this site in your browser, choose your icon under “View guide again”, tap “Get started”, then add to Home Screen or install the app again.',
+    'To change the icon: export a backup first, open this site in your browser, choose an icon under “View guide again”, tap “Get started”, re-add to Home Screen or install the app, then import your backup.',
   etaDisplay: 'Time display',
   etaMinutes: 'Minutes left',
   etaClock: 'Clock time',
