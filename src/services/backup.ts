@@ -1,14 +1,34 @@
 import type { AppSettings, FavoriteStop } from '../types/kmb'
+import { DEFAULT_SETTINGS } from '../types/kmb'
 import { normalizeSettingsForImport } from '../hooks/useSettings'
 
 const FAVORITES_KEY = 'favorites'
 const SETTINGS_KEY = 'settings'
 
+export type BackupSettings = Omit<AppSettings, 'appIconMode'>
+
 export interface AppBackupV1 {
   schema: 'eseebus-backup-v1'
   exportedAt: string
   favorites: FavoriteStop[]
-  settings: AppSettings
+  settings: BackupSettings
+}
+
+function settingsForBackup(settings: AppSettings): BackupSettings {
+  const { appIconMode: _ignored, ...backupSettings } = settings
+  return backupSettings
+}
+
+function loadCurrentAppIconMode(): AppSettings['appIconMode'] {
+  try {
+    const raw = localStorage.getItem(SETTINGS_KEY)
+    if (!raw) return DEFAULT_SETTINGS.appIconMode
+    const parsed = JSON.parse(raw) as Record<string, unknown>
+    const normalized = normalizeSettingsForImport(parsed)
+    return normalized.appIconMode
+  } catch {
+    return DEFAULT_SETTINGS.appIconMode
+  }
 }
 
 export function createBackup(
@@ -19,7 +39,7 @@ export function createBackup(
     schema: 'eseebus-backup-v1',
     exportedAt: new Date().toISOString(),
     favorites,
-    settings,
+    settings: settingsForBackup(settings),
   }
 }
 
@@ -39,9 +59,16 @@ function isFavoriteStop(value: unknown): value is FavoriteStop {
   )
 }
 
+function normalizeBackupSettings(raw: Record<string, unknown>): BackupSettings {
+  const normalized = normalizeSettingsForImport(raw)
+  return settingsForBackup(normalized)
+}
+
 export function parseBackup(raw: string): AppBackupV1 | null {
   try {
-    const data = JSON.parse(raw) as Partial<AppBackupV1>
+    const data = JSON.parse(raw) as Partial<AppBackupV1> & {
+      settings?: Record<string, unknown>
+    }
     if (data.schema !== 'eseebus-backup-v1') return null
     if (!Array.isArray(data.favorites) || !data.favorites.every(isFavoriteStop)) return null
     if (!data.settings || typeof data.settings !== 'object') return null
@@ -49,7 +76,7 @@ export function parseBackup(raw: string): AppBackupV1 | null {
       schema: 'eseebus-backup-v1',
       exportedAt: typeof data.exportedAt === 'string' ? data.exportedAt : new Date().toISOString(),
       favorites: data.favorites,
-      settings: normalizeSettingsForImport(data.settings as unknown as Record<string, unknown>),
+      settings: normalizeBackupSettings(data.settings),
     }
   } catch {
     return null
@@ -57,8 +84,12 @@ export function parseBackup(raw: string): AppBackupV1 | null {
 }
 
 export function applyBackup(backup: AppBackupV1): void {
+  const settings: AppSettings = {
+    ...backup.settings,
+    appIconMode: loadCurrentAppIconMode(),
+  }
   localStorage.setItem(FAVORITES_KEY, JSON.stringify(backup.favorites))
-  localStorage.setItem(SETTINGS_KEY, JSON.stringify(backup.settings))
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings))
   window.location.reload()
 }
 
