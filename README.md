@@ -1,6 +1,6 @@
-# Eseebus
+# ESeebus
 
-大字體、無廣告的香港巴士到站查詢 PWA（[ezhkbus.app](https://ezhkbus.app)），支援 **九巴、城巴、專線小巴**。資料來自政府開放 API。
+大字體、無廣告的香港巴士到站查詢 PWA（[ESeekbus.app](https://eseebus.app)），支援 **九巴、城巴、專線小巴**。資料來自政府開放 API。
 
 ## 功能
 
