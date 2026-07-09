@@ -1,11 +1,14 @@
 import type { AppIconMode } from '../types/kmb'
 
+import { APP_FULL_NAME, APP_SHORT_NAME } from '../constants/appInfo'
+
 const ICON_DEFAULT = '/favicon.svg'
+const ICON_DEFAULT_APPLE = '/eseebus-app-icon.png'
 const ICON_KMB = '/kmb-app-icon.png'
 
 const MANIFEST_BASE = {
-  name: '巴士報站網頁版',
-  short_name: '巴士報站',
+  name: APP_FULL_NAME,
+  short_name: APP_SHORT_NAME,
   description: '大字體、無廣告的香港巴士到站查詢',
   start_url: '/',
   display: 'standalone',
@@ -33,10 +36,13 @@ export function applyAppIcon(mode: AppIconMode) {
   const useKmb = mode === 'kmb'
   const href = useKmb ? ICON_KMB : ICON_DEFAULT
   const type = useKmb ? 'image/png' : 'image/svg+xml'
-  const sizes = useKmb ? '192x192' : 'any'
 
   upsertLink('icon', href, type)
-  upsertLink('apple-touch-icon', href, useKmb ? 'image/png' : undefined)
+  upsertLink(
+    'apple-touch-icon',
+    useKmb ? ICON_KMB : ICON_DEFAULT_APPLE,
+    'image/png',
+  )
 
   if (manifestBlobUrl) {
     URL.revokeObjectURL(manifestBlobUrl)
@@ -45,14 +51,29 @@ export function applyAppIcon(mode: AppIconMode) {
 
   const manifest = {
     ...MANIFEST_BASE,
-    icons: [
-      {
-        src: href,
-        sizes,
-        type,
-        purpose: 'any maskable',
-      },
-    ],
+    icons: useKmb
+      ? [
+          {
+            src: ICON_KMB,
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+        ]
+      : [
+          {
+            src: ICON_DEFAULT_APPLE,
+            sizes: '150x150',
+            type: 'image/png',
+            purpose: 'any maskable',
+          },
+          {
+            src: ICON_DEFAULT,
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any',
+          },
+        ],
   }
 
   manifestBlobUrl = URL.createObjectURL(

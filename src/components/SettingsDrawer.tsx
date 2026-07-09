@@ -291,29 +291,6 @@ export function SettingsDrawer({
         />
 
         <div className="settings-section">
-          <h3>{t('appIcon')}</h3>
-          <div className="settings-icon-options">
-            {(
-              [
-                ['default', t('iconDefault'), '/favicon.svg'],
-                ['kmb', t('iconKmb'), '/kmb-app-icon.png'],
-              ] as const
-            ).map(([value, label, src]) => (
-              <button
-                key={value}
-                type="button"
-                className={`settings-icon-option${settings.appIconMode === value ? ' settings-icon-option--active' : ''}`}
-                onClick={() => onUpdate({ appIconMode: value })}
-              >
-                <img className="settings-icon-option__preview" src={src} alt="" aria-hidden="true" />
-                <span>{label}</span>
-              </button>
-            ))}
-          </div>
-          <p className="settings-hint">{t('iconHint')}</p>
-        </div>
-
-        <div className="settings-section">
           <h3>{t('etaDisplay')}</h3>
           <div className="settings-options">
             {(

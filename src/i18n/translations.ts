@@ -3,8 +3,8 @@ import type { AppLocale } from './types'
 export type TranslationKey = keyof typeof zhTW
 
 const zhTW = {
-  appName: '巴士報站網頁版',
-  appTagline: '大字體 · 無廣告 · 簡單易用',
+  appName: '易看站',
+  appTagline: 'ESee Bus · 大字體 · 無廣告 · 簡單易用',
   languageLabel: '語言',
   navHome: '主頁',
   navSearch: '搜尋',
@@ -17,7 +17,7 @@ const zhTW = {
   credit: '鳴謝',
   dataSources: '資訊來源',
   privacyPolicy: '私隱政策',
-  creditP1: '本應用（ezhkbus.app）為非官方個人項目，旨在提供簡潔、無廣告的巴士到站查詢體驗。',
+  creditP1: '本應用（易看站 / ESee Bus）為非官方個人項目，旨在提供簡潔、無廣告的巴士到站查詢體驗。',
   creditP2: '與九巴、城巴、專線小巴及任何營運商無從屬關係。',
   sourceKmb: '九巴／龍運：data.etabus.gov.hk',
   sourceCtb: '城巴：rt.data.gov.hk',
@@ -50,8 +50,10 @@ const zhTW = {
   step3Desc: '在搜尋頁用下方大鍵盤輸入路線號碼。',
   step4Title: '調整顯示',
   step4Desc: '主頁右上角齒輪可調整字號、背景色與高亮色調色板。',
-  step5Title: '加入主畫面',
-  step5Desc:
+  step5Title: '選擇圖示',
+  step5Desc: '在下方選擇分頁與主畫面圖示。請在加入主畫面前完成此步驟。',
+  step6Title: '加入主畫面',
+  step6Desc:
     '在 Safari：分享 →「加入主畫面」；在 Chrome：選單 →「安裝應用程式」或「加入主畫面」。加入後可像 App 一樣使用，無需每次開瀏覽器。',
   emptyFavorites: '尚未收藏車站',
   emptyFavoritesHint: '請到搜尋或路線詳情頁加入',
@@ -84,10 +86,12 @@ const zhTW = {
   textAuto: '自動（暗色背景變淺）',
   textAutoHint: '自動（依背景調整）',
   textColorHint: '時間顏色跟隨「高亮色」設定',
-  appIcon: '網頁圖示',
-  iconDefault: 'Eseebus',
+  appIcon: '選擇圖示',
+  iconDefault: '易看站',
   iconKmb: '九巴 App',
-  iconHint: '切換後分頁標籤圖示會即時更新；加入主畫面後若未變更，請重新加入主畫面。',
+  iconOnboardingHint: '分頁標籤圖示會即時更新。',
+  iconIphoneWarning:
+    'iPhone／iPad 使用者：加入主畫面後圖示無法再更改（即使清除瀏覽器資料亦然）。請先在此選好圖示，再執行上方「加入主畫面」步驟。',
   etaDisplay: '顯示時間',
   etaMinutes: '剩餘分鐘',
   etaClock: '實際時間',
@@ -124,8 +128,8 @@ const zhTW = {
 } as const
 
 const zhCN: Record<TranslationKey, string> = {
-  appName: '巴士报站网页版',
-  appTagline: '大字体 · 无广告 · 简单易用',
+  appName: '易看站',
+  appTagline: 'ESee Bus · 大字体 · 无广告 · 简单易用',
   languageLabel: '语言',
   navHome: '主页',
   navSearch: '搜索',
@@ -138,7 +142,7 @@ const zhCN: Record<TranslationKey, string> = {
   credit: '鸣谢',
   dataSources: '资讯来源',
   privacyPolicy: '隐私政策',
-  creditP1: '本应用（ezhkbus.app）为非官方个人项目，旨在提供简洁、无广告的巴士到站查询体验。',
+  creditP1: '本应用（易看站 / ESee Bus）为非官方个人项目，旨在提供简洁、无广告的巴士到站查询体验。',
   creditP2: '与九巴、城巴、专线小巴及任何运营商无从属关系。',
   sourceKmb: '九巴／龙运：data.etabus.gov.hk',
   sourceCtb: '城巴：rt.data.gov.hk',
@@ -171,8 +175,10 @@ const zhCN: Record<TranslationKey, string> = {
   step3Desc: '在搜索页用下方大键盘输入路线号码。',
   step4Title: '调整显示',
   step4Desc: '主页右上角齿轮可调整字号、背景色与高亮色调色板。',
-  step5Title: '加入主画面',
-  step5Desc:
+  step5Title: '选择图标',
+  step5Desc: '在下方选择分页与主画面图标。请在加入主画面前完成此步骤。',
+  step6Title: '加入主画面',
+  step6Desc:
     '在 Safari：分享 →「加入主画面」；在 Chrome：菜单 →「安装应用程序」或「加入主画面」。加入后可像 App 一样使用，无需每次开浏览器。',
   emptyFavorites: '尚未收藏车站',
   emptyFavoritesHint: '请到搜索或路线详情页加入',
@@ -205,10 +211,12 @@ const zhCN: Record<TranslationKey, string> = {
   textAuto: '自动（暗色背景变浅）',
   textAutoHint: '自动（依背景调整）',
   textColorHint: '时间颜色跟随「高亮色」设置',
-  appIcon: '网页图标',
-  iconDefault: 'Eseebus',
+  appIcon: '选择图标',
+  iconDefault: '易看站',
   iconKmb: '九巴 App',
-  iconHint: '切换后分页标签图标会即时更新；加入主画面后若未变更，请重新加入主画面。',
+  iconOnboardingHint: '分页标签图标会即时更新。',
+  iconIphoneWarning:
+    'iPhone／iPad 用户：加入主画面后图标无法再更改（即使清除浏览器数据亦然）。请先在此选好图标，再执行上方「加入主画面」步骤。',
   etaDisplay: '显示时间',
   etaMinutes: '剩余分钟',
   etaClock: '实际时间',
@@ -245,8 +253,8 @@ const zhCN: Record<TranslationKey, string> = {
 }
 
 const en: Record<TranslationKey, string> = {
-  appName: 'HK Bus ETA',
-  appTagline: 'Large text · No ads · Easy to use',
+  appName: 'ESee Bus',
+  appTagline: 'Yi Kan Zhan · Large text · No ads · Easy to use',
   languageLabel: 'Language',
   navHome: 'Home',
   navSearch: 'Search',
@@ -260,7 +268,7 @@ const en: Record<TranslationKey, string> = {
   dataSources: 'Data sources',
   privacyPolicy: 'Privacy Policy',
   creditP1:
-    'This app (ezhkbus.app) is an unofficial personal project offering a simple, ad-free bus ETA experience.',
+    'This app (ESee Bus / 易看站) is an unofficial personal project offering a simple, ad-free bus ETA experience.',
   creditP2: 'Not affiliated with KMB, Citybus, GMB, or any operator.',
   sourceKmb: 'KMB/LWB: data.etabus.gov.hk',
   sourceCtb: 'Citybus: rt.data.gov.hk',
@@ -293,8 +301,10 @@ const en: Record<TranslationKey, string> = {
   step3Desc: 'On Search, use the large keypad below to enter a route number.',
   step4Title: 'Adjust display',
   step4Desc: 'Tap the gear on Home to change font size, background, and accent colors.',
-  step5Title: 'Add to Home Screen',
-  step5Desc:
+  step5Title: 'Choose icon',
+  step5Desc: 'Pick the tab and Home Screen icon below. Do this before adding to Home Screen.',
+  step6Title: 'Add to Home Screen',
+  step6Desc:
     'Safari: Share → “Add to Home Screen”; Chrome: Menu → “Install app” or “Add to Home Screen”. Use it like an app without opening the browser each time.',
   emptyFavorites: 'No saved stops yet',
   emptyFavoritesHint: 'Add stops from Search or route detail',
@@ -327,10 +337,12 @@ const en: Record<TranslationKey, string> = {
   textAuto: 'Auto (light text on dark bg)',
   textAutoHint: 'Auto (based on background)',
   textColorHint: 'Time color follows accent color',
-  appIcon: 'App icon',
-  iconDefault: 'Eseebus',
+  appIcon: 'Choose icon',
+  iconDefault: 'ESee Bus',
   iconKmb: 'KMB App',
-  iconHint: 'Tab icon updates immediately; re-add to Home Screen if it does not change.',
+  iconOnboardingHint: 'The browser tab icon updates immediately.',
+  iconIphoneWarning:
+    'iPhone / iPad: the Home Screen icon cannot be changed after you add the app (even if you clear browser data). Choose your icon here first, then follow step 6 above.',
   etaDisplay: 'Time display',
   etaMinutes: 'Minutes left',
   etaClock: 'Clock time',

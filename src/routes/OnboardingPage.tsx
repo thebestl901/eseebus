@@ -2,14 +2,17 @@ import { useNavigate } from 'react-router-dom'
 import { hasSeenOnboarding, markOnboardingSeen, useSettings } from '../hooks/useSettings'
 import { useTranslation } from '../i18n/I18nContext'
 import { LanguageSelector } from '../components/LanguageSelector'
+import { AppIconSelector } from '../components/AppIconSelector'
 import { APP_VERSION, GITHUB_REPO_URL } from '../constants/appInfo'
+import { isAppleMobile } from '../utils/device'
 
 const STEP_KEYS = [
   { icon: '⭐', title: 'step1Title', desc: 'step1Desc' },
   { icon: '🏠', title: 'step2Title', desc: 'step2Desc' },
   { icon: '🔍', title: 'step3Title', desc: 'step3Desc' },
   { icon: '⚙️', title: 'step4Title', desc: 'step4Desc' },
-  { icon: '📲', title: 'step5Title', desc: 'step5Desc' },
+  { icon: '🎨', title: 'step5Title', desc: 'step5Desc' },
+  { icon: '📲', title: 'step6Title', desc: 'step6Desc' },
 ] as const
 
 export function OnboardingPage() {
@@ -17,6 +20,7 @@ export function OnboardingPage() {
   const seen = hasSeenOnboarding()
   const { settings, updateSettings } = useSettings()
   const { t } = useTranslation()
+  const showIphoneIconWarning = isAppleMobile()
 
   const handleStart = () => {
     markOnboardingSeen()
@@ -45,6 +49,20 @@ export function OnboardingPage() {
           </div>
         ))}
       </div>
+
+      <section className="onboarding__icon-picker" aria-label={t('appIcon')}>
+        <h2 className="onboarding__icon-picker-title">{t('appIcon')}</h2>
+        <AppIconSelector
+          value={settings.appIconMode}
+          onChange={(appIconMode) => updateSettings({ appIconMode })}
+        />
+        <p className="settings-hint">{t('iconOnboardingHint')}</p>
+        {showIphoneIconWarning && (
+          <p className="onboarding__icon-warning" role="note">
+            {t('iconIphoneWarning')}
+          </p>
+        )}
+      </section>
 
       <div className="onboarding__footer">
         <LanguageSelector

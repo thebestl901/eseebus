@@ -790,6 +790,32 @@
   margin-bottom: 2rem;
 }
 
+.onboarding__icon-picker {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  border: 2px solid var(--border-color);
+  border-radius: 12px;
+  background: var(--bg-secondary);
+}
+
+.onboarding__icon-picker-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.onboarding__icon-warning {
+  margin: 0.75rem 0 0;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 2px solid color-mix(in srgb, var(--accent-color) 45%, var(--border-color));
+  background: color-mix(in srgb, var(--accent-color) 10%, var(--bg-primary));
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  font-weight: 600;
+}
+
 .onboarding-step {
   display: flex;
   gap: 1rem;

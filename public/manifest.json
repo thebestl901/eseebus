@@ -1,7 +1,7 @@
 {
-  "name": "巴士報站網頁版",
-  "short_name": "巴士報站",
-  "description": "大字體、無廣告的香港巴士到站查詢",
+  "name": "易看站 · 巴士到站查詢",
+  "short_name": "易看站",
+  "description": "易看站（ESee Bus）— 大字體、無廣告的香港巴士到站查詢",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#E60012",
@@ -10,10 +10,16 @@
   "lang": "zh-HK",
   "icons": [
     {
+      "src": "/eseebus-app-icon.png",
+      "sizes": "150x150",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
       "src": "/favicon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/kmb-app-icon.png",
