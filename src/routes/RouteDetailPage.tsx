@@ -237,6 +237,8 @@ export function RouteDetailPage() {
   const handleStopAction = (seq: number) => {
     setSelectedSeq(seq)
     setActionMenu(seq)
+    setMapHeight(getRouteMapHeightMax())
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleFavorite = (point: RouteStopPoint) => {
