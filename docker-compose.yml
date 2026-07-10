@@ -13,19 +13,3 @@ services:
       timeout: 5s
       retries: 3
       start_period: 10s
-
-  eseebus-staging:
-    build: .
-    image: eseebus:latest
-    container_name: eseebus-staging
-    ports:
-      - "${DEBUG_PORT:-8080}:80"
-    volumes:
-      - ./nginx.staging.conf:/etc/nginx/conf.d/default.conf:ro
-    restart: unless-stopped
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/health"]
-      interval: 30s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
