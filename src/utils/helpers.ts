@@ -86,10 +86,20 @@ export function getEtaArrivals(
 ): EtaArrival[] {
   const tr: TranslateFn = t ?? ((key) => key)
   if (etas.length === 0) return []
-  return etas
-    .sort((a, b) => a.eta_seq - b.eta_seq)
-    .slice(0, max)
-    .map((e) => mapKmbStopEta(e, locale, tr))
+
+  const sorted = [...etas].sort((a, b) => a.eta_seq - b.eta_seq)
+  const picked: KmbStopEta[] = []
+  const seenKeys = new Set<string>()
+
+  for (const entry of sorted) {
+    const key = entry.eta ?? `__status__:${entry.rmk_tc}`
+    if (seenKeys.has(key)) continue
+    seenKeys.add(key)
+    picked.push(entry)
+    if (picked.length >= max) break
+  }
+
+  return picked.map((e) => mapKmbStopEta(e, locale, tr))
 }
 
 export function formatArrivalTime(
