@@ -14,5 +14,17 @@ export interface ActiveWarning {
 
 export interface HomeWeatherData {
   temperature: number | null
+  iconCode: number | null
   warnings: ActiveWarning[]
+}
+
+export interface WeatherDisplaySlide {
+  warningCode: string
+  label: string
+}
+
+export interface WeatherDisplay {
+  iconCode: number | null
+  temperature: number | null
+  slides: WeatherDisplaySlide[]
 }

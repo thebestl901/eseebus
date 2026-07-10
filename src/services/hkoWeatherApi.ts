@@ -1,7 +1,40 @@
 import type { AppLocale } from '../i18n/types'
-import type { ActiveWarning, HkoWarningSummary, HomeWeatherData } from '../types/weather'
+import type {
+  ActiveWarning,
+  HkoWarningSummary,
+  HomeWeatherData,
+  WeatherDisplay,
+  WeatherDisplaySlide,
+} from '../types/weather'
+import { localWeatherIconPath } from '../constants/hkoWeatherIcons'
 
 const API_BASE = '/api/hko/weatherAPI/opendata/weather.php'
+const HKO_WARNING_ICON_BASE = 'https://www.hko.gov.hk/en/wxinfo/dailywx/images'
+
+/** Official HKO warning symbols — https://www.hko.gov.hk/en/wxinfo/dailywx/warnlegend.htm */
+const WARNING_ICON_FILES: Record<string, string> = {
+  WHOT: 'vhot.gif',
+  WCOLD: 'cold.gif',
+  WFIRER: 'firer.gif',
+  WFIREY: 'firey.gif',
+  WFROST: 'frost.gif',
+  WL: 'landslip.gif',
+  WFNTSA: 'ntfl.gif',
+  WRAINA: 'raina.gif',
+  WRAINR: 'rainr.gif',
+  WRAINB: 'rainb.gif',
+  WMSGNL: 'sms.gif',
+  TC1: 'tc1.gif',
+  TC3: 'tc3.gif',
+  TC8NE: 'tc8ne.gif',
+  TC8SE: 'tc8b.gif',
+  TC8SW: 'tc8c.gif',
+  TC8NW: 'tc8d.gif',
+  TC9: 'tc9.gif',
+  TC10: 'tc10.gif',
+  WTS: 'ts.gif',
+  WTMW: 'tsunami-warn.gif',
+}
 
 const SEVERE_TYPHOON_CODES = new Set([
   'TC8NE',
@@ -30,6 +63,7 @@ async function fetchHko<T>(dataType: string, locale: AppLocale): Promise<T> {
 }
 
 interface RhrreadResponse {
+  icon?: number[]
   temperature?: {
     data?: { place: string; value: number; unit: string }[]
   }
@@ -37,6 +71,11 @@ interface RhrreadResponse {
 
 interface WarnsumResponse {
   [key: string]: HkoWarningSummary | undefined
+}
+
+function parseIconCode(data: RhrreadResponse): number | null {
+  const code = data.icon?.[0]
+  return typeof code === 'number' ? code : null
 }
 
 function parseTemperature(data: RhrreadResponse): number | null {
@@ -61,27 +100,41 @@ export function isSevereWarning(code: string): boolean {
   return SEVERE_TYPHOON_CODES.has(normalized) || SEVERE_RAIN_CODES.has(normalized)
 }
 
-export function buildWeatherDisplayItems(
-  data: HomeWeatherData | null,
-): string[] {
-  if (!data) return []
+/** https://www.hko.gov.hk/textonly/v2/explain/wxicon_e.htm */
+export function weatherIconUrl(iconCode: number): string {
+  return localWeatherIconPath(iconCode)
+}
+
+export function warningIconUrl(code: string): string | null {
+  const file = WARNING_ICON_FILES[code.toUpperCase()]
+  return file ? `${HKO_WARNING_ICON_BASE}/${file}` : null
+}
+
+function toSlides(warnings: ActiveWarning[]): WeatherDisplaySlide[] {
+  return warnings.map((warning) => ({
+    warningCode: warning.code,
+    label: warning.name,
+  }))
+}
+
+export function buildWeatherDisplay(data: HomeWeatherData | null): WeatherDisplay | null {
+  if (!data) return null
 
   const severe = data.warnings.filter((warning) => isSevereWarning(warning.code))
   const other = data.warnings.filter((warning) => !isSevereWarning(warning.code))
-  const tempLabel = data.temperature !== null ? `${data.temperature}°C` : null
 
+  let slides: WeatherDisplaySlide[] = []
   if (severe.length > 0) {
-    return severe.map((warning) => warning.name)
+    slides = toSlides(severe)
+  } else if (other.length > 0) {
+    slides = toSlides(other)
   }
 
-  if (other.length > 0) {
-    if (tempLabel) {
-      return other.flatMap((warning) => [warning.name, tempLabel])
-    }
-    return other.map((warning) => warning.name)
+  return {
+    iconCode: data.iconCode,
+    temperature: data.temperature,
+    slides,
   }
-
-  return tempLabel ? [tempLabel] : []
 }
 
 export async function fetchHomeWeather(locale: AppLocale): Promise<HomeWeatherData> {
@@ -92,6 +145,7 @@ export async function fetchHomeWeather(locale: AppLocale): Promise<HomeWeatherDa
 
   return {
     temperature: parseTemperature(rhrread),
+    iconCode: parseIconCode(rhrread),
     warnings: parseWarnings(warnsum),
   }
 }
