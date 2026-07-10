@@ -27,9 +27,14 @@ function parseOperator(raw?: string): TransportOperator {
 
 const ROUTE_MAP_HEIGHT_MIN = 96
 const ROUTE_MAP_HEIGHT_MAX_CAP = 280
+const ROUTE_MAP_HEIGHT_EXPANDED_CAP = 340
 
 function getRouteMapHeightMax() {
   return Math.min(Math.round(window.innerHeight * 0.36), ROUTE_MAP_HEIGHT_MAX_CAP)
+}
+
+function getRouteMapHeightExpanded() {
+  return Math.min(Math.round(window.innerHeight * 0.46), ROUTE_MAP_HEIGHT_EXPANDED_CAP)
 }
 
 function mapHeightForScroll(scrollTop: number) {
@@ -67,14 +72,17 @@ export function RouteDetailPage() {
   const [altStopArrivals, setAltStopArrivals] = useState<Record<number, import('../types/kmb').EtaArrival[]>>({})
   const headerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLElement>(null)
+  const ignoreScrollRef = useRef(false)
   const [headerHeight, setHeaderHeight] = useState(0)
   const [mapHeight, setMapHeight] = useState(getRouteMapHeightMax)
+  const [mapLocked, setMapLocked] = useState(false)
 
   useEffect(() => {
     if (!route) return
     setLoading(true)
     setSelectedSeq(null)
     setActionMenu(null)
+    setMapLocked(false)
     setAltStopArrivals({})
     setError(null)
 
@@ -147,18 +155,49 @@ export function RouteDetailPage() {
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0 })
+    setMapLocked(false)
     setMapHeight(getRouteMapHeightMax())
   }, [route, bound, operator, gmbRouteId, gmbRouteSeq])
 
   const handleTimelineScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
-    setMapHeight(mapHeightForScroll(event.currentTarget.scrollTop))
+    if (ignoreScrollRef.current) return
+    const scrollTop = event.currentTarget.scrollTop
+    if (mapLocked) {
+      if (scrollTop > 12) setMapLocked(false)
+      else return
+    }
+    setMapHeight(mapHeightForScroll(scrollTop))
+  }, [mapLocked])
+
+  const expandMapForStop = useCallback((seq: number) => {
+    setMapLocked(true)
+    setMapHeight(getRouteMapHeightExpanded())
+    ignoreScrollRef.current = true
+    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+
+    requestAnimationFrame(() => {
+      const container = scrollRef.current
+      const item = container?.querySelector(`[data-stop-seq="${seq}"]`) as HTMLElement | null
+      if (!container || !item) {
+        ignoreScrollRef.current = false
+        return
+      }
+      const targetTop = Math.max(0, item.offsetTop - getRouteMapHeightExpanded() - 12)
+      if (targetTop > 0) {
+        container.scrollTo({ top: targetTop, behavior: 'smooth' })
+        window.setTimeout(() => {
+          ignoreScrollRef.current = false
+        }, 450)
+      } else {
+        ignoreScrollRef.current = false
+      }
+    })
   }, [])
 
   useEffect(() => {
-    if (!selectedSeq || loading) return
-    const el = scrollRef.current?.querySelector('.timeline-stop--selected')
-    el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-  }, [selectedSeq, loading])
+    if (!selectedSeq || loading || !highlightStopId) return
+    expandMapForStop(selectedSeq)
+  }, [selectedSeq, loading, highlightStopId, expandMapForStop])
 
   const stopMap = useMemo(() => {
     const map = new Map<string, KmbStop>()
@@ -237,9 +276,10 @@ export function RouteDetailPage() {
   const handleStopAction = (seq: number) => {
     setSelectedSeq(seq)
     setActionMenu(seq)
-    setMapHeight(getRouteMapHeightMax())
-    scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
+    expandMapForStop(seq)
   }
+
+  const displayMapHeight = mapLocked ? getRouteMapHeightExpanded() : mapHeight
 
   const handleFavorite = (point: RouteStopPoint) => {
     if (!route) return
@@ -451,7 +491,7 @@ export function RouteDetailPage() {
               coordinates={coordinates}
               stops={timelineStops}
               selectedSeq={selectedSeq}
-              height={mapHeight}
+              height={displayMapHeight}
               onStopSelect={handleStopAction}
             />
 
@@ -475,6 +515,7 @@ export function RouteDetailPage() {
                 return (
                   <li
                     key={`${seq}-${point.stopId}`}
+                    data-stop-seq={seq}
                     className={`timeline-stop${isSelected ? ' timeline-stop--selected' : ''}`}
                   >
                     <button
