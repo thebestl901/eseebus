@@ -55,17 +55,70 @@ npm run build
 
 ## 部署（Docker，推薦）
 
-容器內使用 **Nginx** 提供靜態 PWA，並代理上述三個 API（與 `vercel.json` 設定一致）。
+容器內使用 **Nginx** 提供靜態 PWA，並代理上述 API（與 `vercel.json` 設定一致）。
 
-### 快速啟動
+專案提供兩個 Docker 服務：
+
+| 服務 | 容器名稱 | 預設埠口 | 用途 |
+|------|----------|----------|------|
+| `eseebus` | `eseebus` | 80 / 443 | 正式環境 |
+| `eseebus-staging` | `eseebus-staging` | 8080 | 調試／預發布測試 |
+
+### VPS 部署流程（建議）
+
+更新時**先在調試埠測試**，確認無誤再部署正式環境：
 
 ```bash
-docker compose up -d --build
+# 1. 拉取最新程式碼
+git pull
+
+# 2. 部署到調試環境（預設 http://你的VPS_IP:8080）
+npm run docker:staging:up
+
+# 3. 測試健康檢查
+curl http://127.0.0.1:8080/health
+# 應回傳 staging-ok
+
+# 4. 瀏覽器實測功能正常後，部署正式環境
+npm run docker:up
+```
+
+調試環境回應標頭會包含 `X-ESeebus-Env: staging`，方便分辨是否為測試版本。
+
+### 快速啟動（正式環境）
+
+```bash
+docker compose up -d --build eseebus
+# 或
+npm run docker:up
 ```
 
 瀏覽器開啟：**http://localhost**（預設埠 80；本機開發可用 `PORT=8080`）
 
 健康檢查：**http://localhost/health**（應回傳 `ok`）
+
+### 調試環境
+
+```bash
+# 啟動調試容器（預設埠 8080）
+npm run docker:staging:up
+
+# 查看日誌
+npm run docker:staging:logs
+
+# 停止調試容器
+npm run docker:staging:down
+
+# 重新部署調試環境
+npm run docker:staging:restart
+```
+
+瀏覽器開啟：**http://localhost:8080**（或 `.env` 內 `DEBUG_PORT` 指定之埠口）
+
+健康檢查：**http://localhost:8080/health**（應回傳 `staging-ok`）
+
+> VPS 首次使用請確保防火牆已開放 `DEBUG_PORT`（預設 8080），例如：
+> `sudo ufw allow 8080/tcp`
 
 ### 常用指令
 
@@ -73,23 +126,23 @@ docker compose up -d --build
 # 建置映像
 npm run docker:build
 
-# 背景啟動（含重新建置）
+# 正式環境：背景啟動（含重新建置）
 npm run docker:up
 
-# 停止
+# 正式環境：停止
 npm run docker:down
 
-# 查看日誌
+# 正式環境：查看日誌
 npm run docker:logs
 
-# 重新部署
+# 正式環境：重新部署
 npm run docker:restart
 
-# 指定埠口（例如 3000）
-PORT=3000 docker compose up -d --build
+# 指定正式環境埠口（例如 3000）
+PORT=3000 docker compose up -d --build eseebus
 ```
 
-亦可複製 `.env.example` 為 `.env` 後修改 `PORT`。
+亦可複製 `.env.example` 為 `.env` 後修改 `PORT`、`HTTPS_PORT`、`DEBUG_PORT`。
 
 ### 僅用 Docker（不用 Compose）
 

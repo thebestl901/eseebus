@@ -10,10 +10,14 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "docker:build": "docker build -t eseebus .",
-    "docker:up": "docker compose up -d --build",
+    "docker:up": "docker compose up -d --build eseebus",
     "docker:down": "docker compose down",
-    "docker:logs": "docker compose logs -f",
-    "docker:restart": "docker compose down && docker compose up -d --build"
+    "docker:logs": "docker compose logs -f eseebus",
+    "docker:restart": "docker compose up -d --build eseebus",
+    "docker:staging:up": "docker compose up -d --build eseebus-staging",
+    "docker:staging:down": "docker compose stop eseebus-staging",
+    "docker:staging:logs": "docker compose logs -f eseebus-staging",
+    "docker:staging:restart": "docker compose up -d --build eseebus-staging"
   },
   "dependencies": {
     "idb": "^8.0.3",
