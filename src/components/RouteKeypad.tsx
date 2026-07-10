@@ -1,3 +1,4 @@
+import { useMemo } from 'react'
 import { useTranslation } from '../i18n/I18nContext'
 
 const DIGIT_KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0']
@@ -7,15 +8,15 @@ const DEFAULT_SUFFIX_KEYS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'K', 'M', '
 interface RouteKeypadProps {
   value: string
   onChange: (value: string) => void
-  /** null = routes loading, all keys active */
+  /** null = show all keys (initial / empty query) */
   validKeys?: Set<string> | null
   /** Letter keys shown on the suffix row(s), derived from loaded route catalog. */
   suffixKeys?: string[]
 }
 
-function keyClass(key: string, validKeys: Set<string> | null | undefined, extra = ''): string {
+function keyClass(key: string, smartActive: boolean, validKeys: Set<string>, extra = ''): string {
   const classes = ['keypad-btn', extra].filter(Boolean)
-  if (validKeys === null || validKeys === undefined) return classes.join(' ')
+  if (!smartActive) return classes.join(' ')
   classes.push(validKeys.has(key) ? 'keypad-btn--valid' : 'keypad-btn--disabled')
   return classes.join(' ')
 }
@@ -23,27 +24,36 @@ function keyClass(key: string, validKeys: Set<string> | null | undefined, extra 
 export function RouteKeypad({ value, onChange, validKeys, suffixKeys }: RouteKeypadProps) {
   const { t } = useTranslation()
   const letters = suffixKeys?.length ? suffixKeys : DEFAULT_SUFFIX_KEYS
+  const smartActive = validKeys !== null && validKeys !== undefined
+
+  const digitKeys = useMemo(() => {
+    if (!smartActive) return DIGIT_KEYS
+    return DIGIT_KEYS.filter((key) => validKeys.has(key))
+  }, [smartActive, validKeys])
+
+  const suffixDisplayKeys = useMemo(() => {
+    if (!smartActive) return letters
+    return letters.filter((key) => validKeys.has(key))
+  }, [letters, smartActive, validKeys])
 
   const append = (key: string) => {
-    if (validKeys && !validKeys.has(key)) return
+    if (smartActive && !validKeys.has(key)) return
     onChange(value + key)
   }
   const backspace = () => onChange(value.slice(0, -1))
   const clear = () => onChange('')
 
-  const smartActive = validKeys !== null && validKeys !== undefined
-
   return (
-    <div className={`keypad${smartActive ? ' keypad--smart' : ''}`}>
+    <div className={`keypad${smartActive ? ' keypad--smart' : ' keypad--full'}`}>
       <div className="keypad__display" aria-live="polite">
         {value || t('keypadPlaceholder')}
       </div>
       <div className="keypad__grid">
-        {DIGIT_KEYS.map((key) => (
+        {digitKeys.map((key) => (
           <button
             key={key}
             type="button"
-            className={keyClass(key, validKeys)}
+            className={keyClass(key, smartActive, validKeys ?? new Set())}
             disabled={smartActive && !validKeys.has(key)}
             onClick={() => append(key)}
           >
@@ -52,11 +62,11 @@ export function RouteKeypad({ value, onChange, validKeys, suffixKeys }: RouteKey
         ))}
       </div>
       <div className="keypad__suffix-grid">
-        {letters.map((key) => (
+        {suffixDisplayKeys.map((key) => (
           <button
             key={key}
             type="button"
-            className={keyClass(key, validKeys, 'keypad-btn--suffix')}
+            className={keyClass(key, smartActive, validKeys ?? new Set(), 'keypad-btn--suffix')}
             disabled={smartActive && !validKeys.has(key)}
             onClick={() => append(key)}
           >

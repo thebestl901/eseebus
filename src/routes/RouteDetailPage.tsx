@@ -445,7 +445,12 @@ export function RouteDetailPage() {
           <div className="loading-spinner">{t('loadingRoutes')}</div>
         ) : (
           <>
-            <RouteMap coordinates={coordinates} height={mapHeight} />
+            <RouteMap
+              coordinates={coordinates}
+              stops={timelineStops}
+              selectedSeq={selectedSeq}
+              height={mapHeight}
+            />
 
             <div className="route-timeline">
               <h2 className="route-timeline__heading">{t('stopList')}</h2>

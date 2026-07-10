@@ -97,7 +97,7 @@ export function SearchPage() {
   const suffixKeys = useMemo(() => collectRouteLetters(routeNames), [routeNames])
 
   const validKeys = useMemo(() => {
-    if (loading || !index) return null
+    if (loading || !index || !query.trim()) return null
     return getValidRouteKeypresses(query, routeNames)
   }, [query, routeNames, loading, index])
 
