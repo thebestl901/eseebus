@@ -5,13 +5,15 @@
   left: 0;
   right: 0;
   z-index: 100;
-  height: var(--header-height);
+  height: var(--header-total);
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--accent-color);
   color: var(--header-text);
-  padding: 0 1rem;
+  padding: var(--safe-top) max(1rem, env(safe-area-inset-right, 0px)) 0
+    max(1rem, env(safe-area-inset-left, 0px));
+  box-sizing: border-box;
 }
 
 .header__title {
@@ -21,7 +23,11 @@
 
 .header__action {
   position: absolute;
-  right: 0.5rem;
+  right: max(0.5rem, env(safe-area-inset-right, 0px));
+  top: var(--safe-top);
+  bottom: 0;
+  display: flex;
+  align-items: center;
 }
 
 .header__gear {
@@ -37,7 +43,7 @@
   right: 0;
   z-index: 100;
   display: flex;
-  height: calc(var(--nav-height) + var(--safe-bottom));
+  height: var(--nav-total);
   padding-bottom: var(--safe-bottom);
   background: var(--bg-primary);
   border-top: 2px solid var(--border-color);
@@ -605,7 +611,7 @@
 /* Keypad */
 .keypad {
   position: fixed;
-  bottom: calc(var(--nav-height) + var(--safe-bottom));
+  bottom: var(--nav-total);
   left: 0;
   right: 0;
   background: var(--bg-secondary);
@@ -618,7 +624,7 @@
 }
 
 .search-page .page-content {
-  padding-bottom: min(420px, 55vh);
+  padding-bottom: var(--search-keypad-gap, min(380px, 48vh));
 }
 
 .keypad__display {
@@ -643,6 +649,9 @@
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: 0.35rem;
   margin-bottom: 0.35rem;
+  max-height: 140px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .keypad__suffix-row {
@@ -678,10 +687,6 @@
 }
 
 /* Search results */
-.search-page__content {
-  padding-bottom: min(440px, 58vh);
-}
-
 .search-results {
   list-style: none;
 }
@@ -692,15 +697,16 @@
   align-items: center;
   gap: 0.75rem;
   width: 100%;
-  padding: 1rem 1.25rem;
+  padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border-color);
   text-align: left;
-  min-height: 48px;
+  min-height: 44px;
 }
 
 .search-result-item .route-number {
   flex-shrink: 0;
-  min-width: 2.5rem;
+  min-width: 2.25rem;
+  font-size: calc(1.5rem * var(--font-scale));
 }
 
 .search-result-item__dest {
@@ -980,7 +986,8 @@
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.75rem 1rem;
+  padding: calc(0.75rem + var(--safe-top)) max(1rem, env(safe-area-inset-right, 0px)) 0.75rem
+    max(1rem, env(safe-area-inset-left, 0px));
   background: var(--accent-color);
   color: var(--header-text);
 }
@@ -1087,5 +1094,92 @@
   border-color: var(--accent-color);
   color: var(--accent-color);
   font-weight: 600;
+}
+
+/* Compact layout for short viewports (small / narrow phones) */
+@media (max-height: 740px) {
+  .search-page {
+    --search-keypad-gap: min(320px, 44vh);
+  }
+
+  .search-page .keypad {
+    padding: 0.35rem 0.5rem;
+  }
+
+  .search-page .keypad__display {
+    font-size: 1.25rem;
+    padding: 0.2rem;
+    margin-bottom: 0.25rem;
+    min-height: 1.5rem;
+  }
+
+  .search-page .keypad-btn {
+    min-height: 44px;
+    font-size: 1.25rem;
+  }
+
+  .search-page .keypad-btn--suffix {
+    min-height: 38px;
+    font-size: 0.95rem;
+  }
+
+  .search-page .keypad__suffix-grid {
+    max-height: 84px;
+    gap: 0.25rem;
+  }
+
+  .search-page .keypad__grid,
+  .search-page .keypad__actions {
+    gap: 0.25rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .search-page .keypad__actions .keypad-btn {
+    min-height: 42px;
+    font-size: 0.95rem;
+  }
+
+  .search-page .search-result-item {
+    padding: 0.5rem 0.875rem;
+    gap: 0.5rem;
+    min-height: 40px;
+  }
+
+  .search-page .search-result-item .route-number {
+    font-size: calc(1.35rem * var(--font-scale));
+    min-width: 2rem;
+  }
+
+  .search-page .search-result-item__dest {
+    font-size: 0.95rem;
+  }
+
+  .search-page .search-result-item__chevron {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-height: 640px) {
+  .search-page {
+    --search-keypad-gap: min(280px, 40vh);
+  }
+
+  .search-page .keypad-btn {
+    min-height: 40px;
+    font-size: 1.15rem;
+  }
+
+  .search-page .keypad-btn--suffix {
+    min-height: 34px;
+    font-size: 0.9rem;
+  }
+
+  .search-page .keypad__suffix-grid {
+    max-height: 72px;
+  }
+
+  .search-page .keypad__actions .keypad-btn {
+    min-height: 38px;
+  }
 }
 

@@ -59,9 +59,8 @@ export function HomePage() {
         }
       />
 
-      {error && <div className="error-message">{error}</div>}
-
       <main className="page-content page-content--with-header">
+        {error && <div className="error-message">{error}</div>}
         {favorites.length === 0 ? (
           <div className="empty-state">
             {t('emptyFavorites')}

@@ -109,9 +109,8 @@ export function SearchPage() {
     <div className="app-layout search-page">
       <Header title={t('navSearch')} />
 
-      {error && <div className="error-message">{error}</div>}
-
       <main className="page-content page-content--with-header search-page__content">
+        {error && <div className="error-message">{error}</div>}
         {loading ? (
           <div className="loading-spinner">{t('loadingRoutes')}</div>
         ) : (
