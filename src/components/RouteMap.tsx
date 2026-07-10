@@ -30,28 +30,24 @@ function FitBounds({ coordinates, enabled }: { coordinates: LatLngExpression[]; 
   return null
 }
 
-function FocusStop({ stop, neighbors }: { stop: RouteStopPoint | null; neighbors: RouteStopPoint[] }) {
+function FocusStop({
+  stop,
+  mapHeight,
+}: {
+  stop: RouteStopPoint | null
+  mapHeight?: number
+}) {
   const map = useMap()
   useEffect(() => {
     if (!stop || stop.lat == null || stop.lng == null) return
 
-    const nearby = neighbors
-      .filter((n) => n.lat != null && n.lng != null)
-      .map((n) => [n.lat!, n.lng!] as [number, number])
+    const timer = window.setTimeout(() => {
+      map.invalidateSize()
+      map.flyTo([stop.lat!, stop.lng!], 17, { duration: 0.45 })
+    }, 120)
 
-    const points: [number, number][] = [[stop.lat, stop.lng], ...nearby]
-
-    if (points.length === 1) {
-      map.flyTo(points[0], 16, { duration: 0.45 })
-      return
-    }
-
-    map.flyToBounds(L.latLngBounds(points), {
-      padding: [36, 36],
-      maxZoom: 16,
-      duration: 0.45,
-    })
-  }, [map, stop, neighbors])
+    return () => window.clearTimeout(timer)
+  }, [map, stop?.seq, stop?.lat, stop?.lng, mapHeight])
   return null
 }
 
@@ -81,13 +77,6 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
     () => plottedStops.find((stop) => stop.seq === selectedSeq) ?? null,
     [plottedStops, selectedSeq],
   )
-
-  const focusNeighbors = useMemo(() => {
-    if (!selectedStop) return []
-    const index = plottedStops.findIndex((stop) => stop.seq === selectedStop.seq)
-    if (index < 0) return []
-    return plottedStops.slice(Math.max(0, index - 1), index + 2).filter((stop) => stop.seq !== selectedStop.seq)
-  }, [plottedStops, selectedStop])
 
   if (coordinates.length === 0 && plottedStops.length === 0) {
     return (
@@ -138,7 +127,7 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
               : plottedStops.map((stop) => [stop.lat!, stop.lng!] as LatLngExpression)
           }
         />
-        <FocusStop stop={selectedStop} neighbors={focusNeighbors} />
+        <FocusStop stop={selectedStop} mapHeight={height} />
         <InvalidateOnResize height={height} />
       </MapContainer>
     </div>
