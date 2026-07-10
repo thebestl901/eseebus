@@ -63,6 +63,10 @@ function normalizeSettings(raw: Record<string, unknown>): AppSettings {
       raw.etaDisplayMode === 'clock' || raw.etaDisplayMode === 'minutes'
         ? raw.etaDisplayMode
         : DEFAULT_SETTINGS.etaDisplayMode
+    const clockFormat =
+      raw.clockFormat === '12h' || raw.clockFormat === '24h'
+        ? raw.clockFormat
+        : DEFAULT_SETTINGS.clockFormat
     const textColor: string | null =
       raw.textColor === null
         ? null
@@ -81,6 +85,7 @@ function normalizeSettings(raw: Record<string, unknown>): AppSettings {
       textColor,
       contrastMode,
       etaDisplayMode,
+      clockFormat,
       appIconMode,
       locale,
     }
@@ -97,6 +102,7 @@ function normalizeSettings(raw: Record<string, unknown>): AppSettings {
     textColor: DEFAULT_SETTINGS.textColor,
     contrastMode,
     etaDisplayMode: DEFAULT_SETTINGS.etaDisplayMode,
+    clockFormat: DEFAULT_SETTINGS.clockFormat,
     appIconMode: DEFAULT_SETTINGS.appIconMode,
     locale,
   }

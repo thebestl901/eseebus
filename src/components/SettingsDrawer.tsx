@@ -310,8 +310,34 @@ export function SettingsDrawer({
             ))}
           </div>
           <p className="settings-hint">
-            {settings.etaDisplayMode === 'minutes' ? t('etaMinutesHint') : t('etaClockHint')}
+            {settings.etaDisplayMode === 'minutes'
+              ? t('etaMinutesHint')
+              : settings.clockFormat === '12h'
+                ? t('clockFormatHint12')
+                : t('clockFormatHint24')}
           </p>
+          {settings.etaDisplayMode === 'clock' && (
+            <>
+              <h3 className="settings-subheading">{t('clockFormat')}</h3>
+              <div className="settings-options">
+                {(
+                  [
+                    ['24h', t('clockFormat24')],
+                    ['12h', t('clockFormat12')],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={`settings-option${settings.clockFormat === value ? ' settings-option--active' : ''}`}
+                    onClick={() => onUpdate({ clockFormat: value })}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
         </div>
 
         <div className="settings-section">
