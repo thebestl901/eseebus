@@ -79,6 +79,8 @@ export type ContrastMode = 'normal' | 'high'
 
 export type EtaDisplayMode = 'minutes' | 'clock'
 
+export type ClockFormat = '12h' | '24h'
+
 export type AppIconMode = 'default' | 'kmb'
 
 export type EtaRemarkType = 'last' | 'scheduled'
@@ -105,6 +107,8 @@ export interface AppSettings {
   contrastMode: ContrastMode
   /** Show countdown minutes or clock time (e.g. 12:30). */
   etaDisplayMode: EtaDisplayMode
+  /** 12-hour or 24-hour clock when etaDisplayMode is clock. */
+  clockFormat: ClockFormat
   /** Browser / home-screen icon style. */
   appIconMode: AppIconMode
   /** UI language. */
@@ -118,6 +122,7 @@ export const DEFAULT_SETTINGS: AppSettings = {
   textColor: null,
   contrastMode: 'normal',
   etaDisplayMode: 'minutes',
+  clockFormat: '24h',
   appIconMode: 'default',
   locale: DEFAULT_LOCALE,
 }

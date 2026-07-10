@@ -536,7 +536,13 @@ export function RouteDetailPage() {
                         <span
                           className={`${firstArrival.eta ? 'eta-number' : 'eta-row__eta-sub'} timeline-stop__eta${firstArrival.statusText ? ' timeline-stop__eta--status' : ''}`}
                         >
-                          {formatArrivalTime(firstArrival, settings.etaDisplayMode, t)}
+                          {formatArrivalTime(
+                            firstArrival,
+                            settings.etaDisplayMode,
+                            t,
+                            settings.clockFormat,
+                            settings.locale,
+                          )}
                         </span>
                       )}
                     </button>

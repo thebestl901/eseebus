@@ -1,6 +1,7 @@
 import type { EtaArrival, EtaDisplayMode } from '../types/kmb'
 import { formatArrivalTime } from '../utils/helpers'
 import { useTranslation } from '../i18n/I18nContext'
+import { useSettings } from '../hooks/useSettings'
 
 /** Home row: at most 2 timed buses, or one status line when no ETA. */
 function compactArrivals(arrivals: EtaArrival[]): EtaArrival[] {
@@ -27,6 +28,7 @@ export function EtaArrivalList({
   showRemarks = variant === 'detail',
 }: EtaArrivalListProps) {
   const { t } = useTranslation()
+  const { settings } = useSettings()
 
   if (loading) {
     return <span className="eta-row__loading">…</span>
@@ -45,7 +47,13 @@ export function EtaArrivalList({
             className={`eta-arrival-compact${i > 0 ? ' eta-arrival-compact--sub' : ''}${arrival.remarkType === 'last' || arrival.statusText?.includes('最後') || arrival.statusText?.includes('最后') ? ' eta-arrival-compact--last' : ''}`}
           >
             <span className={i === 0 && !arrival.eta ? 'eta-row__eta-sub' : i === 0 ? 'eta-number' : 'eta-row__eta-sub'}>
-              {formatArrivalTime(arrival, displayMode, t)}
+              {formatArrivalTime(
+                arrival,
+                displayMode,
+                t,
+                settings.clockFormat,
+                settings.locale,
+              )}
             </span>
             {showRemarks && arrival.eta && (i > 0 || arrival.remarkType === 'last') && (
               <span
@@ -68,7 +76,13 @@ export function EtaArrivalList({
           className={`eta-arrival-detail${arrival.remarkType === 'last' ? ' eta-arrival-detail--last' : ''}`}
         >
           <span className="eta-arrival-detail__time">
-            {formatArrivalTime(arrival, displayMode, t)}
+            {formatArrivalTime(
+              arrival,
+              displayMode,
+              t,
+              settings.clockFormat,
+              settings.locale,
+            )}
           </span>
           <span
             className={`eta-remark${arrival.remarkType === 'last' ? ' eta-remark--last' : ' eta-remark--scheduled'}`}

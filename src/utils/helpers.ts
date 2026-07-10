@@ -1,4 +1,4 @@
-import type { EtaArrival, EtaDisplayMode, KmbStopEta } from '../types/kmb'
+import type { EtaArrival, EtaDisplayMode, KmbStopEta, ClockFormat } from '../types/kmb'
 import type { TranslationKey } from '../i18n/translations'
 import type { AppLocale } from '../i18n/types'
 import { pickLocalizedText } from '../i18n/types'
@@ -27,11 +27,31 @@ export function formatEtaMinutes(eta: string | null): number | null {
   return Math.round(diffMs / 60000)
 }
 
-export function formatEtaClock(eta: string): string {
+export function formatEtaClock(
+  eta: string,
+  clockFormat: ClockFormat = '24h',
+  locale: AppLocale = 'zh-TW',
+): string {
   const d = new Date(eta)
-  const h = d.getHours()
+  if (clockFormat === '24h') {
+    const h = d.getHours()
+    const m = d.getMinutes().toString().padStart(2, '0')
+    return `${h}:${m}`
+  }
+
+  if (locale === 'en') {
+    return d.toLocaleTimeString('en-HK', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    })
+  }
+
+  const hours = d.getHours()
+  const period = hours < 12 ? '上午' : '下午'
+  const hour12 = hours % 12 || 12
   const m = d.getMinutes().toString().padStart(2, '0')
-  return `${h}:${m}`
+  return `${period}${hour12}:${m}`
 }
 
 export function isLastBusRemark(rmkTc: string): boolean {
@@ -96,9 +116,11 @@ export function formatArrivalTime(
   arrival: EtaArrival,
   mode: EtaDisplayMode,
   t: TranslateFn,
+  clockFormat: ClockFormat = '24h',
+  locale: AppLocale = 'zh-TW',
 ): string {
   if (!arrival.eta) return arrival.statusText ?? arrival.remarkLabel ?? '--'
-  if (mode === 'clock') return formatEtaClock(arrival.eta)
+  if (mode === 'clock') return formatEtaClock(arrival.eta, clockFormat, locale)
   const unit = t('minutesUnit')
   return localeUsesMinuteSuffix(unit)
     ? `${arrival.minutes}${unit}`
