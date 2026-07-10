@@ -8,7 +8,9 @@ import {
   getCtbRouteStopPoints,
 } from '../services/citybusApi'
 import { getGmbRouteStopPoints } from '../services/gmbApi'
-import { getCtbStopArrivals, getGmbStopArrivals } from '../services/etaService'
+import { getNlbRouteStopPoints } from '../services/nlbApi'
+import { loadMtrBusCatalog, getMtrRouteStopPoints, findMtrRouteVariant } from '../services/mtrBusCatalog'
+import { getCtbStopArrivals, getGmbStopArrivals, getNlbStopArrivals, getMtrStopArrivals } from '../services/etaService'
 import type { KmbRouteEta, KmbRouteStop, KmbStop } from '../types/kmb'
 import type { RouteStopPoint, TransportOperator } from '../types/transport'
 import { formatArrivalTime, getEtaArrivals, localizedStopName } from '../utils/helpers'
@@ -22,6 +24,8 @@ function parseOperator(raw?: string): TransportOperator {
   const op = raw?.toUpperCase()
   if (op === 'CTB') return 'CTB'
   if (op === 'GMB') return 'GMB'
+  if (op === 'NLB') return 'NLB'
+  if (op === 'MTR') return 'MTR'
   return 'KMB'
 }
 
@@ -57,6 +61,13 @@ export function RouteDetailPage() {
   const bound = (direction === 'I' ? 'I' : direction === 'O' ? 'O' : null) as 'O' | 'I' | null
   const gmbRouteId = searchParams.get('routeId') ? Number(searchParams.get('routeId')) : undefined
   const gmbRouteSeq = operator === 'GMB' ? Number(direction) : undefined
+  const nlbRouteId =
+    operator === 'NLB'
+      ? Number(searchParams.get('routeId') ?? direction)
+      : undefined
+  const mtrDirection = (bound ?? 'O') as 'O' | 'I'
+  const mtrLineRef = searchParams.get('lineRef') ?? ''
+  const mtrReferenceId = searchParams.get('refId') ?? route ?? ''
   const { toggleFavorite, upsertFavoriteToTop, isFavorite } = useFavorites()
   const { settings } = useSettings()
   const { t } = useTranslation()
@@ -141,8 +152,61 @@ export function RouteDetailPage() {
         })
         .catch(() => setError(t('loadGmbError')))
         .finally(() => setLoading(false))
+      return
     }
-  }, [route, bound, operator, highlightStopId, gmbRouteId, gmbRouteSeq, destFromQuery, t])
+
+    if (operator === 'NLB' && nlbRouteId && !Number.isNaN(nlbRouteId)) {
+      getNlbRouteStopPoints(nlbRouteId)
+        .then((points) => {
+          if (points.length === 0) {
+            setError(t('loadNlbError'))
+            return
+          }
+          setStopPoints(points)
+          setDestTitle(destFromQuery)
+          if (highlightStopId) {
+            const match = points.find((p) => p.stopId === highlightStopId)
+            if (match) setSelectedSeq(match.seq)
+          }
+        })
+        .catch(() => setError(t('loadNlbError')))
+        .finally(() => setLoading(false))
+      return
+    }
+
+    if (operator === 'MTR' && route) {
+      loadMtrBusCatalog()
+        .then((catalog) => {
+          let referenceId = mtrReferenceId
+          if (mtrLineRef) {
+            const variant = findMtrRouteVariant(
+              catalog,
+              route,
+              mtrDirection,
+              mtrLineRef,
+              referenceId || undefined,
+            )
+            if (variant) referenceId = variant.referenceId
+          }
+          const points = getMtrRouteStopPoints(catalog, route, mtrDirection, referenceId)
+          if (points.length === 0) {
+            setError(t('loadMtrError'))
+            return
+          }
+          setStopPoints(points)
+          setDestTitle(destFromQuery)
+          if (highlightStopId) {
+            const match = points.find((p) => p.stopId === highlightStopId)
+            if (match) setSelectedSeq(match.seq)
+          }
+        })
+        .catch(() => setError(t('loadMtrError')))
+        .finally(() => setLoading(false))
+      return
+    }
+
+    setLoading(false)
+  }, [route, bound, operator, highlightStopId, gmbRouteId, gmbRouteSeq, nlbRouteId, mtrDirection, mtrLineRef, mtrReferenceId, destFromQuery, t])
 
   useEffect(() => {
     const onResize = () => {
@@ -157,7 +221,7 @@ export function RouteDetailPage() {
     scrollRef.current?.scrollTo({ top: 0 })
     setMapLocked(false)
     setMapHeight(getRouteMapHeightMax())
-  }, [route, bound, operator, gmbRouteId, gmbRouteSeq])
+  }, [route, bound, operator, gmbRouteId, gmbRouteSeq, nlbRouteId, mtrLineRef, mtrReferenceId])
 
   const handleTimelineScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
     if (ignoreScrollRef.current) return
@@ -261,8 +325,34 @@ export function RouteDetailPage() {
         .catch(() => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
         })
+      return
     }
-  }, [selectedSeq, route, operator, bound, stopPoints, gmbRouteId, gmbRouteSeq, settings.locale, t])
+
+    if (operator === 'NLB' && nlbRouteId) {
+      const point = stopPoints.find((p) => p.seq === selectedSeq)
+      if (!point) return
+      getNlbStopArrivals(nlbRouteId, point.stopId, 3, settings.locale, t)
+        .then((arrivals) => {
+          setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
+        })
+        .catch(() => {
+          setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
+        })
+      return
+    }
+
+    if (operator === 'MTR' && mtrLineRef && route) {
+      const point = stopPoints.find((p) => p.seq === selectedSeq)
+      if (!point) return
+      getMtrStopArrivals(route, point.stopId, mtrLineRef, 3, settings.locale, t)
+        .then((arrivals) => {
+          setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
+        })
+        .catch(() => {
+          setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
+        })
+    }
+  }, [selectedSeq, route, operator, bound, stopPoints, gmbRouteId, gmbRouteSeq, nlbRouteId, mtrLineRef, settings.locale, t])
 
   const getStopArrivals = (seq: number) => {
     if (operator === 'KMB') {
@@ -332,6 +422,35 @@ export function RouteDetailPage() {
         destEn: destEnFromQuery,
         region: (searchParams.get('region') as import('../types/transport').GmbRegion) ?? undefined,
       })
+    } else if (operator === 'NLB' && nlbRouteId) {
+      toggleFavorite({
+        operator: 'NLB',
+        route,
+        direction: String(nlbRouteId),
+        routeId: nlbRouteId,
+        stopId: point.stopId,
+        stopName: point.nameTc,
+        stopNameSc: point.nameSc,
+        stopNameEn: point.nameEn,
+        destTc: destFromQuery || destTitle,
+        destSc: destScFromQuery,
+        destEn: destEnFromQuery,
+      })
+    } else if (operator === 'MTR' && mtrLineRef && mtrReferenceId) {
+      toggleFavorite({
+        operator: 'MTR',
+        route,
+        direction: mtrDirection,
+        mtrLineRef,
+        mtrReferenceId,
+        stopId: point.stopId,
+        stopName: point.nameTc,
+        stopNameSc: point.nameSc,
+        stopNameEn: point.nameEn,
+        destTc: destFromQuery || destTitle,
+        destSc: destScFromQuery,
+        destEn: destEnFromQuery,
+      })
     }
     setActionMenu(null)
   }
@@ -385,6 +504,35 @@ export function RouteDetailPage() {
         destSc: destScFromQuery,
         destEn: destEnFromQuery,
         region: (searchParams.get('region') as import('../types/transport').GmbRegion) ?? undefined,
+      })
+    } else if (operator === 'NLB' && nlbRouteId) {
+      upsertFavoriteToTop({
+        operator: 'NLB',
+        route,
+        direction: String(nlbRouteId),
+        routeId: nlbRouteId,
+        stopId: point.stopId,
+        stopName: point.nameTc,
+        stopNameSc: point.nameSc,
+        stopNameEn: point.nameEn,
+        destTc: destFromQuery || destTitle,
+        destSc: destScFromQuery,
+        destEn: destEnFromQuery,
+      })
+    } else if (operator === 'MTR' && mtrLineRef && mtrReferenceId) {
+      upsertFavoriteToTop({
+        operator: 'MTR',
+        route,
+        direction: mtrDirection,
+        mtrLineRef,
+        mtrReferenceId,
+        stopId: point.stopId,
+        stopName: point.nameTc,
+        stopNameSc: point.nameSc,
+        stopNameEn: point.nameEn,
+        destTc: destFromQuery || destTitle,
+        destSc: destScFromQuery,
+        destEn: destEnFromQuery,
       })
     }
     setActionMenu(null)
@@ -453,6 +601,24 @@ export function RouteDetailPage() {
         stopId: point.stopId,
         routeId: gmbRouteId,
         routeSeq: gmbRouteSeq,
+      })
+    }
+    if (operator === 'NLB') {
+      return isFavorite({
+        operator: 'NLB',
+        route,
+        direction: String(nlbRouteId),
+        stopId: point.stopId,
+        routeId: nlbRouteId,
+      })
+    }
+    if (operator === 'MTR') {
+      return isFavorite({
+        operator: 'MTR',
+        route,
+        direction: mtrDirection,
+        stopId: point.stopId,
+        mtrLineRef,
       })
     }
     return isFavorite({

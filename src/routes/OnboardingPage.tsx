@@ -97,6 +97,8 @@ export function OnboardingPage() {
                 <li>{t('sourceKmb')}</li>
                 <li>{t('sourceCtb')}</li>
                 <li>{t('sourceGmb')}</li>
+                <li>{t('sourceNlb')}</li>
+                <li>{t('sourceMtr')}</li>
                 <li>{t('sourceMap')}</li>
               </ul>
               <p>{t('sourceNote')}</p>

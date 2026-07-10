@@ -197,6 +197,8 @@ export function operatorLabel(operator: TransportOperator, t: TranslateFn): stri
     KMB: t('operatorKmb'),
     CTB: t('operatorCtb'),
     GMB: t('operatorGmb'),
+    NLB: t('operatorNlb'),
+    MTR: t('operatorMtr'),
   } as const
   return map[operator]
 }

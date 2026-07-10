@@ -56,7 +56,7 @@ export interface FavoriteStop {
   id: string
   operator?: TransportOperator
   route: string
-  /** KMB/CTB: 'O' | 'I'. GMB: route_seq as string. */
+  /** KMB/CTB: 'O' | 'I'. GMB: route_seq. NLB: routeId as string. */
   direction: string
   serviceType?: string
   stopId: string
@@ -68,11 +68,14 @@ export interface FavoriteStop {
   destTc: string
   destSc?: string
   destEn?: string
-  /** GMB only */
+  /** GMB / NLB */
   routeId?: number
   region?: GmbRegion
   routeSeq?: number
   stopSeq?: number
+  /** MTR only */
+  mtrLineRef?: string
+  mtrReferenceId?: string
 }
 
 export type ContrastMode = 'normal' | 'high'

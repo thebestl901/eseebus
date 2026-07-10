@@ -32,6 +32,12 @@ export function favoriteId(fav: Omit<FavoriteStop, 'id'>): string {
   if (operator === 'GMB') {
     return `${operator}-${fav.routeId}-${fav.routeSeq}-${fav.stopId}`
   }
+  if (operator === 'NLB') {
+    return `${operator}-${fav.routeId}-${fav.stopId}`
+  }
+  if (operator === 'MTR') {
+    return `${operator}-${fav.route}-${fav.mtrLineRef}-${fav.stopId}`
+  }
   return `${operator}-${fav.route}-${fav.direction}-${fav.stopId}`
 }
 
@@ -56,7 +62,7 @@ export function useFavorites() {
   }, [])
 
   const isFavorite = useCallback(
-    (fav: Pick<FavoriteStop, 'operator' | 'route' | 'direction' | 'stopId' | 'routeId' | 'routeSeq'>) => {
+    (fav: Pick<FavoriteStop, 'operator' | 'route' | 'direction' | 'stopId' | 'routeId' | 'routeSeq' | 'mtrLineRef'>) => {
       const id = favoriteId({ ...fav, operator: fav.operator ?? 'KMB', stopName: '', destTc: '' })
       return favorites.some((f) => f.id === id)
     },
@@ -138,6 +144,8 @@ export function operatorLabelForFavorite(fav: FavoriteStop): string {
     KMB: '九巴',
     CTB: '城巴',
     GMB: '專線小巴',
+    NLB: '新大嶼山巴士',
+    MTR: '港鐵巴士',
   }
   return labels[fav.operator ?? 'KMB']
 }
@@ -151,6 +159,15 @@ export function favoriteRoutePath(fav: FavoriteStop): string {
   if (fav.operator === 'GMB' && fav.routeId && fav.region) {
     params.set('routeId', String(fav.routeId))
     params.set('region', fav.region)
+    return `/route/${op}/${fav.route}/${fav.direction}?${params}`
+  }
+  if (fav.operator === 'NLB' && fav.routeId) {
+    params.set('routeId', String(fav.routeId))
+    return `/route/${op}/${fav.route}/${fav.direction}?${params}`
+  }
+  if (fav.operator === 'MTR' && fav.mtrLineRef && fav.mtrReferenceId) {
+    params.set('lineRef', fav.mtrLineRef)
+    params.set('refId', fav.mtrReferenceId)
     return `/route/${op}/${fav.route}/${fav.direction}?${params}`
   }
   return `/route/${op}/${fav.route}/${fav.direction}?${params}`

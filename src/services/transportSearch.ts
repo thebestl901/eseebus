@@ -1,8 +1,10 @@
 import { getRoutes } from './kmbApi'
 import { getCtbRoutes } from './citybusApi'
 import { getGmbRouteCodes, getGmbRouteDetail } from './gmbApi'
-import type { KmbRoute } from '../types/kmb'
+import { getNlbRoutes, parseNlbDestination, type NlbRoute } from './nlbApi'
+import { clearMtrBusCatalogCache, loadMtrBusCatalog } from './mtrBusCatalog'
 import type { CtbRoute } from './citybusApi'
+import type { KmbRoute } from '../types/kmb'
 import {
   OPERATOR_LABELS,
   type GmbRegion,
@@ -46,6 +48,22 @@ function ctbToSearchItems(routes: CtbRoute[]): RouteSearchItem[] {
     })
   }
   return items
+}
+
+function nlbToSearchItems(routes: NlbRoute[]): RouteSearchItem[] {
+  return routes.map((route) => {
+    const dest = parseNlbDestination(route)
+    return {
+      operator: 'NLB',
+      operatorLabel: OPERATOR_LABELS.NLB,
+      route: route.routeNo,
+      direction: route.routeId,
+      routeId: Number(route.routeId),
+      destTc: dest.destTc,
+      destSc: dest.destSc,
+      destEn: dest.destEn,
+    }
+  })
 }
 
 let gmbCodesCache: { region: GmbRegion; code: string }[] | null = null
@@ -98,18 +116,24 @@ async function fetchGmbSearchItems(
 export interface TransportSearchIndex {
   kmb: RouteSearchItem[]
   ctb: RouteSearchItem[]
+  nlb: RouteSearchItem[]
+  mtr: RouteSearchItem[]
   gmbCodes: { region: GmbRegion; code: string }[]
 }
 
 export async function loadTransportSearchIndex(): Promise<TransportSearchIndex> {
-  const [kmbRoutes, ctbRoutes, gmbCodes] = await Promise.all([
+  const [kmbRoutes, ctbRoutes, nlbRoutes, mtrCatalog, gmbCodes] = await Promise.all([
     getRoutes(),
     getCtbRoutes(),
+    getNlbRoutes(),
+    loadMtrBusCatalog(),
     loadGmbCodes(),
   ])
   return {
     kmb: kmbToSearchItems(kmbRoutes),
     ctb: ctbToSearchItems(ctbRoutes),
+    nlb: nlbToSearchItems(nlbRoutes),
+    mtr: mtrCatalog.searchItems,
     gmbCodes,
   }
 }
@@ -117,6 +141,7 @@ export async function loadTransportSearchIndex(): Promise<TransportSearchIndex> 
 export function clearTransportSearchCaches(): void {
   gmbCodesCache = null
   gmbDetailCache.clear()
+  clearMtrBusCatalogCache()
 }
 
 export function filterStaticSearchItems(
@@ -146,11 +171,19 @@ export async function searchGmbItems(
 export function mergeSearchResults(
   kmb: RouteSearchItem[],
   ctb: RouteSearchItem[],
+  nlb: RouteSearchItem[],
+  mtr: RouteSearchItem[],
   gmb: RouteSearchItem[],
 ): RouteSearchItem[] {
-  const operatorOrder: Record<TransportOperator, number> = { KMB: 0, CTB: 1, GMB: 2 }
+  const operatorOrder: Record<TransportOperator, number> = {
+    KMB: 0,
+    CTB: 1,
+    MTR: 2,
+    NLB: 3,
+    GMB: 4,
+  }
 
-  return [...kmb, ...ctb, ...gmb].sort((a, b) => {
+  return [...kmb, ...ctb, ...mtr, ...nlb, ...gmb].sort((a, b) => {
     const routeCmp = a.route.localeCompare(b.route, undefined, { numeric: true })
     if (routeCmp !== 0) return routeCmp
     const opCmp = operatorOrder[a.operator] - operatorOrder[b.operator]
@@ -161,7 +194,7 @@ export function mergeSearchResults(
 
 export function getAllRouteNames(index: TransportSearchIndex): string[] {
   const names = new Set<string>()
-  for (const item of [...index.kmb, ...index.ctb]) {
+  for (const item of [...index.kmb, ...index.ctb, ...index.nlb, ...index.mtr]) {
     names.add(item.route.toUpperCase())
   }
   for (const { code } of index.gmbCodes) {
@@ -174,6 +207,12 @@ export function searchResultKey(item: RouteSearchItem): string {
   if (item.operator === 'GMB') {
     return `${item.operator}-${item.routeId}-${item.routeSeq}`
   }
+  if (item.operator === 'NLB') {
+    return `${item.operator}-${item.routeId}`
+  }
+  if (item.operator === 'MTR') {
+    return `${item.operator}-${item.route}-${item.mtrLineRef}-${item.mtrReferenceId}`
+  }
   return `${item.operator}-${item.route}-${item.direction}-${item.serviceType ?? '1'}`
 }
 
@@ -185,6 +224,15 @@ export function routeDetailPath(item: RouteSearchItem): string {
   if (item.operator === 'GMB') {
     params.set('routeId', String(item.routeId))
     params.set('region', item.region!)
+    return `/route/${op}/${item.route}/${item.direction}?${params}`
+  }
+  if (item.operator === 'NLB') {
+    params.set('routeId', String(item.routeId))
+    return `/route/${op}/${item.route}/${item.direction}?${params}`
+  }
+  if (item.operator === 'MTR') {
+    params.set('lineRef', item.mtrLineRef!)
+    params.set('refId', item.mtrReferenceId!)
     return `/route/${op}/${item.route}/${item.direction}?${params}`
   }
   return `/route/${op}/${item.route}/${item.direction}?${params}`

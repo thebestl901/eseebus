@@ -81,7 +81,10 @@ export async function getCachedRouteStops<T>(
   const db = await getDb()
   const cached = await db.get('routeStops', key)
   if (cached && !isStale(cached.updatedAt, ROUTE_STOP_TTL)) {
-    return cached.data as T[]
+    const data = cached.data as T[]
+    if (Array.isArray(data) && data.length > 0) {
+      return data
+    }
   }
   const data = await fetcher()
   await db.put('routeStops', { data, updatedAt: Date.now() }, key)
