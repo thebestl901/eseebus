@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { LatLngExpression } from 'leaflet'
 import { RouteMap } from '../components/RouteMap'
@@ -23,6 +23,17 @@ function parseOperator(raw?: string): TransportOperator {
   if (op === 'CTB') return 'CTB'
   if (op === 'GMB') return 'GMB'
   return 'KMB'
+}
+
+const ROUTE_MAP_HEIGHT_MIN = 96
+const ROUTE_MAP_HEIGHT_MAX_CAP = 280
+
+function getRouteMapHeightMax() {
+  return Math.min(Math.round(window.innerHeight * 0.36), ROUTE_MAP_HEIGHT_MAX_CAP)
+}
+
+function mapHeightForScroll(scrollTop: number) {
+  return Math.max(ROUTE_MAP_HEIGHT_MIN, getRouteMapHeightMax() - scrollTop * 0.55)
 }
 
 export function RouteDetailPage() {
@@ -54,6 +65,10 @@ export function RouteDetailPage() {
   const [actionMenu, setActionMenu] = useState<number | null>(null)
   const [destTitle, setDestTitle] = useState('')
   const [altStopArrivals, setAltStopArrivals] = useState<Record<number, import('../types/kmb').EtaArrival[]>>({})
+  const headerRef = useRef<HTMLDivElement>(null)
+  const scrollRef = useRef<HTMLElement>(null)
+  const [headerHeight, setHeaderHeight] = useState(0)
+  const [mapHeight, setMapHeight] = useState(getRouteMapHeightMax)
 
   useEffect(() => {
     if (!route) return
@@ -122,8 +137,26 @@ export function RouteDetailPage() {
   }, [route, bound, operator, highlightStopId, gmbRouteId, gmbRouteSeq, destFromQuery, t])
 
   useEffect(() => {
+    const onResize = () => {
+      const scrollTop = scrollRef.current?.scrollTop ?? 0
+      setMapHeight(mapHeightForScroll(scrollTop))
+    }
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo({ top: 0 })
+    setMapHeight(getRouteMapHeightMax())
+  }, [route, bound, operator, gmbRouteId, gmbRouteSeq])
+
+  const handleTimelineScroll = useCallback((event: React.UIEvent<HTMLElement>) => {
+    setMapHeight(mapHeightForScroll(event.currentTarget.scrollTop))
+  }, [])
+
+  useEffect(() => {
     if (!selectedSeq || loading) return
-    const el = document.querySelector('.timeline-stop--selected')
+    const el = scrollRef.current?.querySelector('.timeline-stop--selected')
     el?.scrollIntoView({ block: 'center', behavior: 'smooth' })
   }, [selectedSeq, loading])
 
@@ -338,6 +371,16 @@ export function RouteDetailPage() {
           destEnFromQuery,
         )
 
+  useLayoutEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const update = () => setHeaderHeight(el.offsetHeight)
+    update()
+    const ro = new ResizeObserver(update)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [titleDest, error, loading, route])
+
   if (!route) {
     navigate('/search')
     return null
@@ -380,7 +423,7 @@ export function RouteDetailPage() {
 
   return (
     <div className="app-layout app-layout--no-nav route-detail">
-      <div className="route-detail__header">
+      <div ref={headerRef} className="route-detail__header">
         <button className="route-detail__back btn-touch" onClick={() => navigate(-1)}>
           ← {t('back')}
         </button>
@@ -390,23 +433,29 @@ export function RouteDetailPage() {
         </h1>
       </div>
 
-      {error && <div className="error-message">{error}</div>}
+      <main
+        ref={scrollRef}
+        className="route-detail__scroll"
+        style={{ paddingTop: headerHeight }}
+        onScroll={handleTimelineScroll}
+      >
+        {error && <div className="error-message">{error}</div>}
 
-      {loading ? (
-        <div className="loading-spinner">{t('loadingRoutes')}</div>
-      ) : (
-        <>
-          <RouteMap coordinates={coordinates} />
+        {loading ? (
+          <div className="loading-spinner">{t('loadingRoutes')}</div>
+        ) : (
+          <>
+            <RouteMap coordinates={coordinates} height={mapHeight} />
 
-          <div className="route-timeline">
-            <h2 className="route-timeline__heading">{t('stopList')}</h2>
-            {operator === 'KMB' && etaError && (
-              <div className="error-message">{etaError}</div>
-            )}
-            {operator === 'KMB' && etaLoading && !routeEtas && (
-              <div className="loading-spinner">{t('loadingEta')}</div>
-            )}
-            <ol className="route-timeline__list">
+            <div className="route-timeline">
+              <h2 className="route-timeline__heading">{t('stopList')}</h2>
+              {operator === 'KMB' && etaError && (
+                <div className="error-message">{etaError}</div>
+              )}
+              {operator === 'KMB' && etaLoading && !routeEtas && (
+                <div className="loading-spinner">{t('loadingEta')}</div>
+              )}
+              <ol className="route-timeline__list">
               {timelineStops.map((point) => {
                 const seq = point.seq
                 const arrivals = getStopArrivals(seq)
@@ -468,9 +517,10 @@ export function RouteDetailPage() {
                 )
               })}
             </ol>
-          </div>
-        </>
-      )}
+            </div>
+          </>
+        )}
+      </main>
     </div>
   )
 }

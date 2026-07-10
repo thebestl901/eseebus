@@ -5,6 +5,15 @@ import 'leaflet/dist/leaflet.css'
 
 interface RouteMapProps {
   coordinates: LatLngExpression[]
+  height?: number
+}
+
+function InvalidateOnResize({ height }: { height?: number }) {
+  const map = useMap()
+  useEffect(() => {
+    map.invalidateSize()
+  }, [map, height])
+  return null
 }
 
 function FitBounds({ coordinates }: { coordinates: LatLngExpression[] }) {
@@ -17,15 +26,22 @@ function FitBounds({ coordinates }: { coordinates: LatLngExpression[] }) {
   return null
 }
 
-export function RouteMap({ coordinates }: RouteMapProps) {
+export function RouteMap({ coordinates, height }: RouteMapProps) {
   if (coordinates.length === 0) {
-    return <div className="route-map route-map--empty">暫不支援</div>
+    return (
+      <div
+        className="route-map route-map--empty"
+        style={height != null ? { height } : undefined}
+      >
+        暫不支援
+      </div>
+    )
   }
 
   const center = coordinates[Math.floor(coordinates.length / 2)]
 
   return (
-    <div className="route-map">
+    <div className="route-map" style={height != null ? { height } : undefined}>
       <MapContainer
         center={center}
         zoom={14}
@@ -38,6 +54,7 @@ export function RouteMap({ coordinates }: RouteMapProps) {
         />
         <Polyline positions={coordinates} color="var(--accent-color)" weight={4} />
         <FitBounds coordinates={coordinates} />
+        <InvalidateOnResize height={height} />
       </MapContainer>
     </div>
   )
