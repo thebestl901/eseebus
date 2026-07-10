@@ -89,7 +89,9 @@ export function SearchPage() {
     if (!index || !query.trim()) return []
     const kmb = filterStaticSearchItems(index.kmb, query)
     const ctb = filterStaticSearchItems(index.ctb, query)
-    return mergeSearchResults(kmb, ctb, gmbResults)
+    const nlb = filterStaticSearchItems(index.nlb, query)
+    const mtr = filterStaticSearchItems(index.mtr, query)
+    return mergeSearchResults(kmb, ctb, nlb, mtr, gmbResults)
   }, [query, index, gmbResults])
 
   const routeNames = useMemo(() => (index ? getAllRouteNames(index) : []), [index])

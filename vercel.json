@@ -3,7 +3,9 @@
     { "source": "/api/kmb/:path*", "destination": "https://data.etabus.gov.hk/v1/transport/kmb/:path*" },
     { "source": "/api/citybus/:path*", "destination": "https://rt.data.gov.hk/v2/transport/citybus/:path*" },
     { "source": "/api/gmb/:path*", "destination": "https://data.etagmb.gov.hk/:path*" },
-    { "source": "/api/hko/:path*", "destination": "https://data.weather.gov.hk/:path*" },
+    { "source": "/api/mtr-data/:path*", "destination": "https://opendata.mtr.com.hk/data/:path*" },
+    { "source": "/api/mtr-bus/:path*", "destination": "https://rt.data.gov.hk/v1/transport/mtr/bus/:path*" },
+    { "source": "/api/nlb/:path*", "destination": "https://rt.data.gov.hk/v1/transport/nlb/:path*" },
     { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "headers": [

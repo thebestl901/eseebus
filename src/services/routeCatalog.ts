@@ -3,6 +3,8 @@ import { getRoutesUpdatedAt, getStopsUpdatedAt } from '../stores/routeStopCache'
 import { forceRefreshRoutes, forceRefreshStops } from './kmbApi'
 import { getCtbRoutes } from './citybusApi'
 import { getGmbRouteCodes } from './gmbApi'
+import { getNlbRoutes } from './nlbApi'
+import { loadMtrBusCatalog } from './mtrBusCatalog'
 import { clearTransportSearchCaches } from './transportSearch'
 
 const META_KEY = 'eseebus-catalog-meta'
@@ -42,6 +44,8 @@ export async function refreshRouteCatalog(): Promise<number> {
     forceRefreshStops(),
     getCtbRoutes(),
     getGmbRouteCodes(),
+    getNlbRoutes(),
+    loadMtrBusCatalog(true),
   ])
   clearTransportSearchCaches()
 

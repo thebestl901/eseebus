@@ -1,6 +1,8 @@
 import { getStopEta, getRouteEta, getRouteStops } from './kmbApi'
 import { getCtbStopEta, ctbEtaToEntries } from './citybusApi'
 import { getGmbStopEta, gmbEtaToEntries } from './gmbApi'
+import { getNlbStopEta, nlbEtaToEntries } from './nlbApi'
+import { getMtrSchedule, getMtrStopArrivalsFromSchedule } from './mtrBusApi'
 import type { EtaArrival, FavoriteStop, KmbStopEta } from '../types/kmb'
 import type { StopEtaEntry } from '../types/transport'
 import { getEtaArrivals, type TranslateFn } from '../utils/helpers'
@@ -103,6 +105,26 @@ export async function getFavoriteEta(
     return arrivals.length > 0 ? arrivals : noEta(tr)
   }
 
+  if (operator === 'NLB') {
+    if (!fav.routeId) return noEta(tr)
+    const etas = await getNlbStopEta(fav.routeId, fav.stopId, locale)
+    const arrivals = entriesToArrivals(nlbEtaToEntries(etas), max, locale, tr)
+    return arrivals.length > 0 ? arrivals : noEta(tr)
+  }
+
+  if (operator === 'MTR') {
+    if (!fav.mtrLineRef) return noEta(tr)
+    const schedule = await getMtrSchedule(fav.route, locale)
+    const arrivals = getMtrStopArrivalsFromSchedule(
+      schedule,
+      fav.stopId,
+      fav.mtrLineRef,
+      max,
+      tr,
+    )
+    return arrivals.length > 0 ? arrivals : noEta(tr)
+  }
+
   return noEta(tr)
 }
 
@@ -131,5 +153,32 @@ export async function getGmbStopArrivals(
   const tr: TranslateFn = t ?? ((key) => key)
   const etas = await getGmbStopEta(routeId, routeSeq, stopSeq)
   const arrivals = entriesToArrivals(gmbEtaToEntries(etas), max, locale, tr)
+  return arrivals.length > 0 ? arrivals : noEta(tr)
+}
+
+export async function getNlbStopArrivals(
+  routeId: number,
+  stopId: string,
+  max = 3,
+  locale: AppLocale = 'zh-TW',
+  t?: TranslateFn,
+): Promise<EtaArrival[]> {
+  const tr: TranslateFn = t ?? ((key) => key)
+  const etas = await getNlbStopEta(routeId, stopId, locale)
+  const arrivals = entriesToArrivals(nlbEtaToEntries(etas), max, locale, tr)
+  return arrivals.length > 0 ? arrivals : noEta(tr)
+}
+
+export async function getMtrStopArrivals(
+  routeName: string,
+  stopId: string,
+  lineRef: string,
+  max = 3,
+  locale: AppLocale = 'zh-TW',
+  t?: TranslateFn,
+): Promise<EtaArrival[]> {
+  const tr: TranslateFn = t ?? ((key) => key)
+  const schedule = await getMtrSchedule(routeName, locale)
+  const arrivals = getMtrStopArrivalsFromSchedule(schedule, stopId, lineRef, max, tr)
   return arrivals.length > 0 ? arrivals : noEta(tr)
 }

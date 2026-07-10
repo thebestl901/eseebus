@@ -47,6 +47,21 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/gmb/, ''),
       },
+      '/api/mtr-bus': {
+        target: 'https://rt.data.gov.hk/v1/transport/mtr/bus',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mtr-bus/, ''),
+      },
+      '/api/mtr-data': {
+        target: 'https://opendata.mtr.com.hk/data',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/mtr-data/, ''),
+      },
+      '/api/nlb': {
+        target: 'https://rt.data.gov.hk/v1/transport/nlb',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/nlb/, ''),
+      },
       '/api/hko': {
         target: 'https://data.weather.gov.hk',
         changeOrigin: true,
