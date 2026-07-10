@@ -47,6 +47,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api\/gmb/, ''),
       },
+      '/api/hko': {
+        target: 'https://data.weather.gov.hk',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/hko/, ''),
+      },
     },
   },
 })

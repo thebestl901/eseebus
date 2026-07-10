@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/Header'
+import { HeaderWeather } from '../components/HeaderWeather'
 import { BottomNav } from '../components/BottomNav'
 import { SettingsDrawer } from '../components/SettingsDrawer'
 import { EtaRow } from '../components/EtaRow'
@@ -16,6 +17,7 @@ import {
 } from '../stores/favoriteEtaCache'
 import type { EtaArrival, FavoriteStop } from '../types/kmb'
 import { useFavoriteDisplayMap } from '../hooks/useFavoriteDisplay'
+import { useHomeWeather } from '../hooks/useHomeWeather'
 import { useTranslation } from '../i18n/I18nContext'
 
 function useFavoriteEtas(
@@ -95,6 +97,7 @@ export function HomePage() {
     isOnline,
   )
   const displayMap = useFavoriteDisplayMap(favorites, settings.locale)
+  const { displayItems: weatherItems } = useHomeWeather(settings.locale)
 
   const headerTitle = !isOnline ? (
     <span className="header__title--offline">
@@ -115,6 +118,7 @@ export function HomePage() {
     <div className="app-layout">
       <Header
         title={headerTitle}
+        leftAction={<HeaderWeather items={weatherItems} />}
         rightAction={
           <button
             className="header__gear btn-touch"
