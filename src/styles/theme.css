@@ -10,7 +10,10 @@
   --header-text: #ffffff;
   --nav-height: 64px;
   --header-height: 56px;
+  --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --header-total: calc(var(--header-height) + var(--safe-top));
+  --nav-total: calc(var(--nav-height) + var(--safe-bottom));
 }
 
 [data-contrast='high'][data-theme='light'] {
@@ -62,7 +65,7 @@ button {
   display: flex;
   flex-direction: column;
   min-height: 100dvh;
-  padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--nav-total);
 }
 
 .app-layout--no-nav {
@@ -75,7 +78,7 @@ button {
 }
 
 .page-content--with-header {
-  padding-top: var(--header-height);
+  padding-top: var(--header-total);
 }
 
 .empty-state {
