@@ -118,6 +118,13 @@
   color: var(--text-secondary);
 }
 
+.settings-subheading {
+  font-size: 0.95rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary);
+}
+
 .settings-options {
   display: flex;
   flex-wrap: wrap;
