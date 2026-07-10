@@ -53,7 +53,12 @@ async function getKmbFavoriteEta(
   const serviceType = fav.serviceType ?? '1'
 
   const stopEtas = await getStopEta(fav.stopId)
-  let filtered = stopEtas.filter((e) => e.route === fav.route && e.dir === bound)
+  let filtered = stopEtas.filter(
+    (e) =>
+      e.route === fav.route &&
+      e.dir === bound &&
+      String(e.service_type) === serviceType,
+  )
 
   if (filtered.length === 0) {
     const [routeEtas, routeStops] = await Promise.all([

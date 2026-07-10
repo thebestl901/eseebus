@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { AppSettings, FavoriteStop } from '../types/kmb'
 import {
@@ -23,6 +23,7 @@ import {
   createBackup,
   downloadBackupFile,
   parseBackup,
+  readBackupFile,
 } from '../services/backup'
 import { APP_VERSION, GITHUB_REPO_URL } from '../constants/appInfo'
 
@@ -150,6 +151,7 @@ export function SettingsDrawer({
   const [importOpen, setImportOpen] = useState(false)
   const [importText, setImportText] = useState('')
   const [importError, setImportError] = useState<string | null>(null)
+  const importFileRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (!open) return
@@ -204,6 +206,24 @@ export function SettingsDrawer({
     }
     setImportError(null)
     applyBackup(backup)
+  }
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+
+    try {
+      const text = await readBackupFile(file)
+      setImportText(text)
+      if (!parseBackup(text.trim())) {
+        setImportError(t('backupImportError'))
+        return
+      }
+      setImportError(null)
+    } catch {
+      setImportError(t('backupImportError'))
+    }
   }
 
   return (
@@ -421,6 +441,20 @@ export function SettingsDrawer({
           ) : (
             <div className="settings-backup-import">
               <p className="settings-hint">{t('backupImportHint')}</p>
+              <input
+                ref={importFileRef}
+                type="file"
+                accept=".json,application/json"
+                className="settings-backup-import__file"
+                onChange={handleImportFile}
+              />
+              <button
+                type="button"
+                className="settings-option settings-backup-import__upload"
+                onClick={() => importFileRef.current?.click()}
+              >
+                {t('backupUploadJson')}
+              </button>
               <textarea
                 className="settings-backup-import__textarea"
                 value={importText}
