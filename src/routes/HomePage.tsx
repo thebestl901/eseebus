@@ -97,7 +97,7 @@ export function HomePage() {
     isOnline,
   )
   const displayMap = useFavoriteDisplayMap(favorites, settings.locale)
-  const { displayItems: weatherItems } = useHomeWeather(settings.locale)
+  const { display: weatherDisplay } = useHomeWeather(settings.locale)
 
   const headerTitle = !isOnline ? (
     <span className="header__title--offline">
@@ -118,7 +118,7 @@ export function HomePage() {
     <div className="app-layout">
       <Header
         title={headerTitle}
-        leftAction={<HeaderWeather items={weatherItems} />}
+        leftAction={<HeaderWeather display={weatherDisplay} />}
         rightAction={
           <button
             className="header__gear btn-touch"

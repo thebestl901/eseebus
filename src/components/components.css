@@ -40,28 +40,48 @@
 .header-weather {
   display: flex;
   align-items: center;
-  min-height: 1.25rem;
+  gap: 0.25rem;
+  min-height: 1.75rem;
+  width: 100%;
+  min-width: 0;
   overflow: hidden;
 }
 
-.header-weather__text {
-  display: block;
-  font-size: 0.8125rem;
-  font-weight: 600;
-  line-height: 1.2;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  animation: header-weather-fade 0.3s ease;
+.header-weather__icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  opacity: 1;
+  transition: opacity 0.4s ease;
 }
 
-@keyframes header-weather-fade {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.header-weather__icon--fading {
+  opacity: 0;
+}
+
+.header-weather__wx-icon {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  object-fit: contain;
+}
+
+.header-weather__temp {
+  flex-shrink: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.header-weather__warn-icon {
+  flex-shrink: 0;
+  width: 1.375rem;
+  height: 1.375rem;
+  object-fit: contain;
 }
 
 .header__offline-status {

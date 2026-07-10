@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { AppLocale } from '../i18n/types'
 import {
-  buildWeatherDisplayItems,
+  buildWeatherDisplay,
   fetchHomeWeather,
 } from '../services/hkoWeatherApi'
 import type { HomeWeatherData } from '../types/weather'
@@ -30,7 +30,7 @@ export function useHomeWeather(locale: AppLocale) {
     return () => clearInterval(id)
   }, [isOnline, refresh])
 
-  const displayItems = useMemo(() => buildWeatherDisplayItems(data), [data])
+  const display = useMemo(() => buildWeatherDisplay(data), [data])
 
-  return { displayItems }
+  return { display }
 }
