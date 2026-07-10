@@ -1055,11 +1055,6 @@
   color: var(--text-secondary);
 }
 
-.route-map-marker-wrap {
-  background: transparent;
-  border: none;
-}
-
 .route-map-marker {
   display: flex;
   align-items: center;
@@ -1074,6 +1069,14 @@
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+.route-map-marker-wrap {
+  background: transparent;
+  border: none;
+  pointer-events: auto;
 }
 
 .route-map-marker--selected {
