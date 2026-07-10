@@ -21,6 +21,54 @@
   font-weight: 700;
 }
 
+.header__title--offline {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.125rem;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.header__left {
+  position: absolute;
+  left: 0.5rem;
+  max-width: 38%;
+  min-width: 0;
+}
+
+.header-weather {
+  display: flex;
+  align-items: center;
+  min-height: 1.25rem;
+  overflow: hidden;
+}
+
+.header-weather__text {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: header-weather-fade 0.3s ease;
+}
+
+@keyframes header-weather-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.header__offline-status {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
 .header__action {
   position: absolute;
   right: max(0.5rem, env(safe-area-inset-right, 0px));
@@ -241,6 +289,15 @@
 
 .settings-backup-import {
   margin-top: 0.75rem;
+}
+
+.settings-backup-import__file {
+  display: none;
+}
+
+.settings-backup-import__upload {
+  width: 100%;
+  margin-bottom: 0.75rem;
 }
 
 .settings-backup-import__textarea {

@@ -6,7 +6,18 @@ import { useSettings } from '../hooks/useSettings'
 /** Home row: at most 2 timed buses, or one status line when no ETA. */
 function compactArrivals(arrivals: EtaArrival[]): EtaArrival[] {
   const withTime = arrivals.filter((a) => a.eta)
-  if (withTime.length > 0) return withTime.slice(0, 2)
+  if (withTime.length > 0) {
+    const unique: EtaArrival[] = []
+    const seen = new Set<string>()
+    for (const arrival of withTime) {
+      const key = arrival.eta
+      if (seen.has(key)) continue
+      seen.add(key)
+      unique.push(arrival)
+      if (unique.length >= 2) break
+    }
+    return unique
+  }
   if (arrivals.length === 0) return []
   return [arrivals[0]]
 }
