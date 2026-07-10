@@ -112,3 +112,12 @@ export function downloadBackupFile(backup: AppBackupV1): void {
   anchor.click()
   URL.revokeObjectURL(url)
 }
+
+export function readBackupFile(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(String(reader.result ?? ''))
+    reader.onerror = () => reject(reader.error ?? new Error('Failed to read file'))
+    reader.readAsText(file)
+  })
+}
