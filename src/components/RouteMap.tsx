@@ -10,6 +10,7 @@ interface RouteMapProps {
   stops?: RouteStopPoint[]
   selectedSeq?: number | null
   height?: number
+  onStopSelect?: (seq: number) => void
 }
 
 function InvalidateOnResize({ height }: { height?: number }) {
@@ -39,7 +40,7 @@ function createStopIcon(seq: number, selected: boolean) {
   })
 }
 
-export function RouteMap({ coordinates, stops = [], selectedSeq, height }: RouteMapProps) {
+export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopSelect }: RouteMapProps) {
   const plottedStops = useMemo(
     () =>
       stops.filter(
@@ -88,6 +89,9 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height }: Route
             position={[stop.lat!, stop.lng!]}
             icon={createStopIcon(stop.seq, selectedSeq === stop.seq)}
             zIndexOffset={selectedSeq === stop.seq ? 1000 : stop.seq}
+            eventHandlers={{
+              click: () => onStopSelect?.(stop.seq),
+            }}
           />
         ))}
         <FitBounds

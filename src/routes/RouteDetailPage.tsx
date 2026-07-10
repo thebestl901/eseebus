@@ -450,6 +450,7 @@ export function RouteDetailPage() {
               stops={timelineStops}
               selectedSeq={selectedSeq}
               height={mapHeight}
+              onStopSelect={handleStopAction}
             />
 
             <div className="route-timeline">
