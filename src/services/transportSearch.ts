@@ -151,10 +151,10 @@ export function mergeSearchResults(
   const operatorOrder: Record<TransportOperator, number> = { KMB: 0, CTB: 1, GMB: 2 }
 
   return [...kmb, ...ctb, ...gmb].sort((a, b) => {
-    const opCmp = operatorOrder[a.operator] - operatorOrder[b.operator]
-    if (opCmp !== 0) return opCmp
     const routeCmp = a.route.localeCompare(b.route, undefined, { numeric: true })
     if (routeCmp !== 0) return routeCmp
+    const opCmp = operatorOrder[a.operator] - operatorOrder[b.operator]
+    if (opCmp !== 0) return opCmp
     return a.direction.localeCompare(b.direction)
   })
 }
