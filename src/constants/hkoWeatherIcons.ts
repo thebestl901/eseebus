@@ -1,4 +1,4 @@
-/** Official HKO weather icon codes — https://www.hko.gov.hk/textonly/v2/explain/wxicon_e.htm */
+/** Official HKO weather icon codes — https://www.hko.gov.hk/textonly/v2/explain/wxicon_e.htm (HKOWxIconOutline) */
 export const HKO_WEATHER_ICON_CODES = [
   50, 51, 52, 53, 54,
   60, 61, 62, 63, 64, 65,

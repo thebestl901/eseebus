@@ -26,6 +26,8 @@ import {
   readBackupFile,
 } from '../services/backup'
 import { APP_VERSION, GITHUB_REPO_URL } from '../constants/appInfo'
+import { checkLatestVersion } from '../services/versionCheck'
+import { UpdateGuideDrawer } from './UpdateGuideDrawer'
 
 interface SettingsDrawerProps {
   open: boolean
@@ -152,6 +154,9 @@ export function SettingsDrawer({
   const [importText, setImportText] = useState('')
   const [importError, setImportError] = useState<string | null>(null)
   const importFileRef = useRef<HTMLInputElement>(null)
+  const [latestVersion, setLatestVersion] = useState<string | null>(null)
+  const [updateAvailable, setUpdateAvailable] = useState(false)
+  const [updateGuideOpen, setUpdateGuideOpen] = useState(false)
 
   useEffect(() => {
     if (!open) return
@@ -160,7 +165,12 @@ export function SettingsDrawer({
     setImportOpen(false)
     setImportText('')
     setImportError(null)
+    setUpdateGuideOpen(false)
     getRouteCatalogUpdatedAt().then(setCatalogUpdatedAt)
+    checkLatestVersion(APP_VERSION).then((result) => {
+      setLatestVersion(result.latestVersion)
+      setUpdateAvailable(result.updateAvailable)
+    })
   }, [open])
 
   if (!open) return null
@@ -227,21 +237,32 @@ export function SettingsDrawer({
   }
 
   return (
-    <div className="settings-overlay" onClick={onClose} role="presentation">
-      <div
-        className="settings-drawer"
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-label={t('settings')}
-      >
-        <div className="settings-drawer__header">
-          <h2>{t('settings')}</h2>
-          <button className="btn-touch settings-drawer__close" onClick={onClose} aria-label={t('close')}>
-            ✕
-          </button>
-        </div>
+    <>
+      <div className="settings-overlay" onClick={onClose} role="presentation">
+        <div
+          className="settings-drawer"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-label={t('settings')}
+        >
+          <div className="settings-drawer__header">
+            <h2>{t('settings')}</h2>
+            <button className="btn-touch settings-drawer__close" onClick={onClose} aria-label={t('close')}>
+              ✕
+            </button>
+          </div>
 
-        <LanguageSelector
+          {updateAvailable && latestVersion && (
+            <button
+              type="button"
+              className="settings-update-banner"
+              onClick={() => setUpdateGuideOpen(true)}
+            >
+              {t('updateAvailableBanner', { version: latestVersion })}
+            </button>
+          )}
+
+          <LanguageSelector
           locale={settings.locale}
           onChange={(locale) => onUpdate({ locale })}
           variant="settings"
@@ -488,7 +509,16 @@ export function SettingsDrawer({
             {t('replayOnboarding')}
           </button>
         </div>
+        </div>
       </div>
-    </div>
+
+      <UpdateGuideDrawer
+        open={updateGuideOpen}
+        latestVersion={latestVersion ?? APP_VERSION}
+        onClose={() => setUpdateGuideOpen(false)}
+        settings={settings}
+        favorites={favorites}
+      />
+    </>
   )
 }

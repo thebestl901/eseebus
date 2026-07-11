@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Header } from '../components/Header'
+import { HeaderWeather } from '../components/HeaderWeather'
 import { BottomNav } from '../components/BottomNav'
+import { SettingsDrawer } from '../components/SettingsDrawer'
 import { RouteKeypad } from '../components/RouteKeypad'
 import {
   filterStaticSearchItems,
@@ -18,6 +20,8 @@ import type { RouteSearchItem } from '../types/transport'
 import { getValidRouteKeypresses, collectRouteLetters, searchResultLabel, searchItemDest } from '../utils/helpers'
 import { useTranslation } from '../i18n/I18nContext'
 import { useSettings } from '../hooks/useSettings'
+import { useFavorites } from '../hooks/useFavorites'
+import { useHomeWeather } from '../hooks/useHomeWeather'
 import { translate } from '../i18n/translations'
 
 export function SearchPage() {
@@ -29,7 +33,10 @@ export function SearchPage() {
   const [error, setError] = useState<string | null>(null)
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { settings } = useSettings()
+  const { settings, updateSettings } = useSettings()
+  const { favorites } = useFavorites()
+  const { display: weatherDisplay } = useHomeWeather(settings.locale)
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   useEffect(() => {
     let cancelled = false
@@ -109,7 +116,19 @@ export function SearchPage() {
 
   return (
     <div className="app-layout search-page">
-      <Header title={t('navSearch')} />
+      <Header
+        title={t('navSearch')}
+        leftAction={<HeaderWeather display={weatherDisplay} />}
+        rightAction={
+          <button
+            className="header__gear btn-touch"
+            onClick={() => setSettingsOpen(true)}
+            aria-label={t('settings')}
+          >
+            ⚙️
+          </button>
+        }
+      />
 
       <main className="page-content page-content--with-header search-page__content">
         {error && <div className="error-message">{error}</div>}
@@ -146,6 +165,13 @@ export function SearchPage() {
 
       <RouteKeypad value={query} onChange={setQuery} validKeys={validKeys} suffixKeys={suffixKeys} />
       <BottomNav />
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        favorites={favorites}
+        onUpdate={updateSettings}
+      />
     </div>
   )
 }

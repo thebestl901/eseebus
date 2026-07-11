@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import type { LatLngExpression } from 'leaflet'
 import { RouteMap } from '../components/RouteMap'
 import { EtaArrivalList } from '../components/EtaArrivalList'
+import { SettingsDrawer } from '../components/SettingsDrawer'
 import { getRouteEta, getRouteStops, getStops } from '../services/kmbApi'
 import {
   getCtbRouteStopPoints,
@@ -68,9 +68,10 @@ export function RouteDetailPage() {
   const mtrDirection = (bound ?? 'O') as 'O' | 'I'
   const mtrLineRef = searchParams.get('lineRef') ?? ''
   const mtrReferenceId = searchParams.get('refId') ?? route ?? ''
-  const { toggleFavorite, upsertFavoriteToTop, isFavorite } = useFavorites()
-  const { settings } = useSettings()
+  const { toggleFavorite, upsertFavoriteToTop, isFavorite, favorites } = useFavorites()
+  const { settings, updateSettings } = useSettings()
   const { t } = useTranslation()
+  const [settingsOpen, setSettingsOpen] = useState(false)
 
   const [kmbRouteStops, setKmbRouteStops] = useState<KmbRouteStop[]>([])
   const [allStops, setAllStops] = useState<KmbStop[]>([])
@@ -78,9 +79,9 @@ export function RouteDetailPage() {
   const [selectedSeq, setSelectedSeq] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [actionMenu, setActionMenu] = useState<number | null>(null)
   const [destTitle, setDestTitle] = useState('')
   const [altStopArrivals, setAltStopArrivals] = useState<Record<number, import('../types/kmb').EtaArrival[]>>({})
+  const [altStopLoading, setAltStopLoading] = useState<number | null>(null)
   const headerRef = useRef<HTMLDivElement>(null)
   const scrollRef = useRef<HTMLElement>(null)
   const ignoreScrollRef = useRef(false)
@@ -92,7 +93,6 @@ export function RouteDetailPage() {
     if (!route) return
     setLoading(true)
     setSelectedSeq(null)
-    setActionMenu(null)
     setMapLocked(false)
     setAltStopArrivals({})
     setError(null)
@@ -239,23 +239,14 @@ export function RouteDetailPage() {
     ignoreScrollRef.current = true
     scrollRef.current?.scrollTo({ top: 0, behavior: 'smooth' })
 
-    requestAnimationFrame(() => {
+    window.setTimeout(() => {
       const container = scrollRef.current
       const item = container?.querySelector(`[data-stop-seq="${seq}"]`) as HTMLElement | null
-      if (!container || !item) {
+      item?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      window.setTimeout(() => {
         ignoreScrollRef.current = false
-        return
-      }
-      const targetTop = Math.max(0, item.offsetTop - getRouteMapHeightExpanded() - 12)
-      if (targetTop > 0) {
-        container.scrollTo({ top: targetTop, behavior: 'smooth' })
-        window.setTimeout(() => {
-          ignoreScrollRef.current = false
-        }, 450)
-      } else {
-        ignoreScrollRef.current = false
-      }
-    })
+      }, 450)
+    }, 160)
   }, [])
 
   useEffect(() => {
@@ -268,12 +259,6 @@ export function RouteDetailPage() {
     for (const s of allStops) map.set(s.stop, s)
     return map
   }, [allStops])
-
-  const coordinates: LatLngExpression[] = useMemo(() => {
-    return stopPoints
-      .filter((p) => p.lat != null && p.lng != null && !Number.isNaN(p.lat) && !Number.isNaN(p.lng))
-      .map((p) => [p.lat!, p.lng!] as LatLngExpression)
-  }, [stopPoints])
 
   const fetchRouteEta = useCallback(async () => {
     if (!route || operator !== 'KMB') return []
@@ -307,6 +292,7 @@ export function RouteDetailPage() {
     if (operator === 'CTB' && bound) {
       const point = stopPoints.find((p) => p.seq === selectedSeq)
       if (!point) return
+      setAltStopLoading(selectedSeq)
       getCtbStopArrivals(point.stopId, route, bound, 3, settings.locale, t)
         .then((arrivals) => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
@@ -314,10 +300,14 @@ export function RouteDetailPage() {
         .catch(() => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
         })
+        .finally(() => {
+          setAltStopLoading((current) => (current === selectedSeq ? null : current))
+        })
       return
     }
 
     if (operator === 'GMB' && gmbRouteId && gmbRouteSeq) {
+      setAltStopLoading(selectedSeq)
       getGmbStopArrivals(gmbRouteId, gmbRouteSeq, selectedSeq, 3, settings.locale, t)
         .then((arrivals) => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
@@ -325,12 +315,16 @@ export function RouteDetailPage() {
         .catch(() => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
         })
+        .finally(() => {
+          setAltStopLoading((current) => (current === selectedSeq ? null : current))
+        })
       return
     }
 
     if (operator === 'NLB' && nlbRouteId) {
       const point = stopPoints.find((p) => p.seq === selectedSeq)
       if (!point) return
+      setAltStopLoading(selectedSeq)
       getNlbStopArrivals(nlbRouteId, point.stopId, 3, settings.locale, t)
         .then((arrivals) => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
@@ -338,18 +332,25 @@ export function RouteDetailPage() {
         .catch(() => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
         })
+        .finally(() => {
+          setAltStopLoading((current) => (current === selectedSeq ? null : current))
+        })
       return
     }
 
     if (operator === 'MTR' && mtrLineRef && route) {
       const point = stopPoints.find((p) => p.seq === selectedSeq)
       if (!point) return
+      setAltStopLoading(selectedSeq)
       getMtrStopArrivals(route, point.stopId, mtrLineRef, 3, settings.locale, t)
         .then((arrivals) => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: arrivals }))
         })
         .catch(() => {
           setAltStopArrivals((prev) => ({ ...prev, [selectedSeq]: [] }))
+        })
+        .finally(() => {
+          setAltStopLoading((current) => (current === selectedSeq ? null : current))
         })
     }
   }, [selectedSeq, route, operator, bound, stopPoints, gmbRouteId, gmbRouteSeq, nlbRouteId, mtrLineRef, settings.locale, t])
@@ -365,7 +366,6 @@ export function RouteDetailPage() {
 
   const handleStopAction = (seq: number) => {
     setSelectedSeq(seq)
-    setActionMenu(seq)
     expandMapForStop(seq)
   }
 
@@ -452,7 +452,6 @@ export function RouteDetailPage() {
         destEn: destEnFromQuery,
       })
     }
-    setActionMenu(null)
   }
 
   const handlePinFavorite = (point: RouteStopPoint) => {
@@ -535,14 +534,12 @@ export function RouteDetailPage() {
         destEn: destEnFromQuery,
       })
     }
-    setActionMenu(null)
   }
 
   const handleWalk = (point: RouteStopPoint) => {
     if (point.lat == null || point.lng == null) return
     const url = `https://www.google.com/maps/dir/?api=1&destination=${point.lat},${point.lng}`
     window.open(url, '_blank')
-    setActionMenu(null)
   }
 
   const etaEntry = routeEtas?.find((e) => e.dir === (bound ?? 'O'))
@@ -629,6 +626,16 @@ export function RouteDetailPage() {
     })
   }
 
+  const selectedPoint =
+    selectedSeq != null ? timelineStops.find((point) => point.seq === selectedSeq) ?? null : null
+  const selectedArrivals = selectedSeq != null ? getStopArrivals(selectedSeq) : []
+  const selectedFavorited = selectedPoint ? checkFavorited(selectedPoint) : false
+  const selectedLoading =
+    selectedSeq != null &&
+    operator !== 'KMB' &&
+    altStopLoading === selectedSeq &&
+    selectedArrivals.length === 0
+
   return (
     <div className="app-layout app-layout--no-nav route-detail">
       <div ref={headerRef} className="route-detail__header">
@@ -639,12 +646,22 @@ export function RouteDetailPage() {
           <span className="route-number">{route}</span>
           {titleDest ? ` ${t('towards', { dest: titleDest })}` : ''}
         </h1>
+        <button
+          className="route-detail__gear header__gear btn-touch"
+          onClick={() => setSettingsOpen(true)}
+          aria-label={t('settings')}
+        >
+          ⚙️
+        </button>
       </div>
 
       <main
         ref={scrollRef}
         className="route-detail__scroll"
-        style={{ paddingTop: headerHeight }}
+        style={{
+          paddingTop: headerHeight,
+          ['--route-map-height' as string]: `${displayMapHeight}px`,
+        }}
         onScroll={handleTimelineScroll}
       >
         {error && <div className="error-message">{error}</div>}
@@ -654,12 +671,52 @@ export function RouteDetailPage() {
         ) : (
           <>
             <RouteMap
-              coordinates={coordinates}
               stops={timelineStops}
               selectedSeq={selectedSeq}
               height={displayMapHeight}
               onStopSelect={handleStopAction}
             />
+
+            {selectedPoint && (
+              <div className="route-selected-stop">
+                <div className="route-selected-stop__header">
+                  <span className="route-selected-stop__seq">{selectedPoint.seq}</span>
+                  <span className="route-selected-stop__name">
+                    {localizedStopName(
+                      settings.locale,
+                      selectedPoint.nameTc,
+                      selectedPoint.nameSc,
+                      selectedPoint.nameEn,
+                    )}
+                    {selectedFavorited && ' ★'}
+                  </span>
+                </div>
+
+                {(operator === 'KMB' && etaLoading && selectedArrivals.length === 0) || selectedLoading ? (
+                  <div className="loading-spinner route-selected-stop__loading">{t('loadingEta')}</div>
+                ) : selectedArrivals.length > 0 ? (
+                  <div className="route-selected-stop__etas">
+                    <EtaArrivalList
+                      arrivals={selectedArrivals}
+                      displayMode={settings.etaDisplayMode}
+                      variant="detail"
+                    />
+                  </div>
+                ) : (
+                  <div className="route-selected-stop__empty">{t('noService')}</div>
+                )}
+
+                <div className="route-selected-stop__menu">
+                  <button onClick={() => handleFavorite(selectedPoint)}>
+                    {selectedFavorited ? t('unfavoriteStop') : t('favoriteStop')}
+                  </button>
+                  <button onClick={() => handlePinFavorite(selectedPoint)}>{t('pinFavorite')}</button>
+                  {selectedPoint.lat != null && selectedPoint.lng != null && (
+                    <button onClick={() => handleWalk(selectedPoint)}>{t('walkToStop')}</button>
+                  )}
+                </div>
+              </div>
+            )}
 
             <div className="route-timeline">
               <h2 className="route-timeline__heading">{t('stopList')}</h2>
@@ -676,7 +733,6 @@ export function RouteDetailPage() {
                 const firstArrival = arrivals[0]
                 const favorited = checkFavorited(point)
                 const isSelected = selectedSeq === seq
-                const showMenu = actionMenu === seq
 
                 return (
                   <li
@@ -712,28 +768,6 @@ export function RouteDetailPage() {
                         </span>
                       )}
                     </button>
-
-                    {isSelected && arrivals.length > 0 && (
-                      <div className="timeline-stop__etas">
-                        <EtaArrivalList
-                          arrivals={arrivals}
-                          displayMode={settings.etaDisplayMode}
-                          variant="detail"
-                        />
-                      </div>
-                    )}
-
-                    {showMenu && (
-                      <div className="timeline-stop__menu">
-                        <button onClick={() => handleFavorite(point)}>
-                          {favorited ? t('unfavoriteStop') : t('favoriteStop')}
-                        </button>
-                        <button onClick={() => handlePinFavorite(point)}>{t('pinFavorite')}</button>
-                        {point.lat != null && point.lng != null && (
-                          <button onClick={() => handleWalk(point)}>{t('walkToStop')}</button>
-                        )}
-                      </div>
-                    )}
                   </li>
                 )
               })}
@@ -742,6 +776,14 @@ export function RouteDetailPage() {
           </>
         )}
       </main>
+
+      <SettingsDrawer
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        settings={settings}
+        favorites={favorites}
+        onUpdate={updateSettings}
+      />
     </div>
   )
 }

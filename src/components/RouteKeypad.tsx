@@ -26,10 +26,7 @@ export function RouteKeypad({ value, onChange, validKeys, suffixKeys }: RouteKey
   const letters = suffixKeys?.length ? suffixKeys : DEFAULT_SUFFIX_KEYS
   const smartActive = validKeys !== null && validKeys !== undefined
 
-  const digitKeys = useMemo(() => {
-    if (!smartActive) return DIGIT_KEYS
-    return DIGIT_KEYS.filter((key) => validKeys.has(key))
-  }, [smartActive, validKeys])
+  const digitKeys = DIGIT_KEYS
 
   const suffixDisplayKeys = useMemo(() => {
     if (!smartActive) return letters

@@ -1,12 +1,11 @@
 import { useEffect, useMemo } from 'react'
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import type { LatLngExpression } from 'leaflet'
 import type { RouteStopPoint } from '../types/transport'
 import 'leaflet/dist/leaflet.css'
 
 interface RouteMapProps {
-  coordinates: LatLngExpression[]
   stops?: RouteStopPoint[]
   selectedSeq?: number | null
   height?: number
@@ -60,7 +59,7 @@ function createStopIcon(seq: number, selected: boolean) {
   })
 }
 
-export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopSelect }: RouteMapProps) {
+export function RouteMap({ stops = [], selectedSeq, height, onStopSelect }: RouteMapProps) {
   const plottedStops = useMemo(
     () =>
       stops.filter(
@@ -78,7 +77,7 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
     [plottedStops, selectedSeq],
   )
 
-  if (coordinates.length === 0 && plottedStops.length === 0) {
+  if (plottedStops.length === 0) {
     return (
       <div
         className="route-map route-map--empty"
@@ -89,9 +88,10 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
     )
   }
 
-  const center =
-    coordinates[Math.floor(coordinates.length / 2)] ??
-    ([plottedStops[0]!.lat!, plottedStops[0]!.lng!] as LatLngExpression)
+  const center = [plottedStops[0]!.lat!, plottedStops[0]!.lng!] as LatLngExpression
+  const boundsCoordinates = plottedStops.map(
+    (stop) => [stop.lat!, stop.lng!] as LatLngExpression,
+  )
 
   return (
     <div className="route-map" style={height != null ? { height } : undefined}>
@@ -105,9 +105,6 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        {coordinates.length > 0 && (
-          <Polyline positions={coordinates} color="var(--accent-color)" weight={4} />
-        )}
         {plottedStops.map((stop) => (
           <Marker
             key={`${stop.seq}-${stop.stopId}`}
@@ -119,14 +116,7 @@ export function RouteMap({ coordinates, stops = [], selectedSeq, height, onStopS
             }}
           />
         ))}
-        <FitBounds
-          enabled={selectedSeq == null}
-          coordinates={
-            coordinates.length > 0
-              ? coordinates
-              : plottedStops.map((stop) => [stop.lat!, stop.lng!] as LatLngExpression)
-          }
-        />
+        <FitBounds enabled={selectedSeq == null} coordinates={boundsCoordinates} />
         <FocusStop stop={selectedStop} mapHeight={height} />
         <InvalidateOnResize height={height} />
       </MapContainer>
