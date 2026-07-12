@@ -23,8 +23,8 @@ RUN apk add --no-cache openssl \
     && openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
         -keyout /etc/nginx/ssl/origin-key.pem \
         -out /etc/nginx/ssl/origin.pem \
-        -subj "/CN=ezhkbus.app" \
-        -addext "subjectAltName=DNS:ezhkbus.app,DNS:www.ezhkbus.app"
+        -subj "/CN=eseebus.app" \
+        -addext "subjectAltName=DNS:eseebus.app,DNS:www.eseebus.app"
 
 EXPOSE 80 443
 

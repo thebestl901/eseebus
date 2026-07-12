@@ -22,7 +22,6 @@ lerna-debug.log*
 
 # Deploy artifacts
 *.tar.gz
-ezhkbus-deploy.tar.gz
 eseebus-deploy.tar.gz
 kmb-simple-deploy.tar.gz
 

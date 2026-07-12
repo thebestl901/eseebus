@@ -1,3 +1,22 @@
+const HEX_COLOR_PATTERN = /^#[0-9A-Fa-f]{3}([0-9A-Fa-f]{3})?$/
+
+export function isValidHexColor(value: string): boolean {
+  return HEX_COLOR_PATTERN.test(value.trim())
+}
+
+export function sanitizeHexColor(value: unknown, fallback: string): string {
+  if (typeof value !== 'string') return fallback
+  const trimmed = value.trim()
+  return isValidHexColor(trimmed) ? trimmed : fallback
+}
+
+export function sanitizeOptionalHexColor(value: unknown, fallback: string | null): string | null {
+  if (value === null) return null
+  if (typeof value !== 'string') return fallback
+  const trimmed = value.trim()
+  return isValidHexColor(trimmed) ? trimmed : fallback
+}
+
 export function parseHexColor(hex: string): [number, number, number] | null {
   const raw = hex.trim().replace('#', '')
   if (raw.length === 3) {

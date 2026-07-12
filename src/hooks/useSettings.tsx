@@ -12,7 +12,7 @@ import {
   FONT_SIZE_MAX,
   FONT_SIZE_MIN,
 } from '../types/kmb'
-import { resolveThemeVars } from '../utils/themeColors'
+import { resolveThemeVars, sanitizeHexColor, sanitizeOptionalHexColor } from '../utils/themeColors'
 import { applyAppIcon } from '../utils/appIcon'
 import type { AppLocale } from '../i18n/types'
 import { DEFAULT_LOCALE, localeToHtmlLang } from '../i18n/types'
@@ -67,21 +67,15 @@ function normalizeSettings(raw: Record<string, unknown>): AppSettings {
       raw.clockFormat === '12h' || raw.clockFormat === '24h'
         ? raw.clockFormat
         : DEFAULT_SETTINGS.clockFormat
-    const textColor: string | null =
-      raw.textColor === null
-        ? null
-        : typeof raw.textColor === 'string'
-          ? raw.textColor
-          : DEFAULT_SETTINGS.textColor
+    const textColor = sanitizeOptionalHexColor(raw.textColor, DEFAULT_SETTINGS.textColor)
     const appIconMode =
       raw.appIconMode === 'kmb' || raw.appIconMode === 'default'
         ? raw.appIconMode
         : DEFAULT_SETTINGS.appIconMode
     return {
       fontSizePx: clampFontSize(raw.fontSizePx),
-      bgColor: typeof raw.bgColor === 'string' ? raw.bgColor : DEFAULT_SETTINGS.bgColor,
-      accentColor:
-        typeof raw.accentColor === 'string' ? raw.accentColor : DEFAULT_SETTINGS.accentColor,
+      bgColor: sanitizeHexColor(raw.bgColor, DEFAULT_SETTINGS.bgColor),
+      accentColor: sanitizeHexColor(raw.accentColor, DEFAULT_SETTINGS.accentColor),
       textColor,
       contrastMode,
       etaDisplayMode,
@@ -94,11 +88,13 @@ function normalizeSettings(raw: Record<string, unknown>): AppSettings {
   const legacyFont = typeof raw.fontSize === 'string' ? raw.fontSize : 'standard'
   const legacyBg = typeof raw.bgColor === 'string' ? raw.bgColor : 'white'
   const legacyAccent = typeof raw.accentColor === 'string' ? raw.accentColor : 'kmb-red'
+  const resolvedBg = LEGACY_BG_COLORS[legacyBg] ?? legacyBg
+  const resolvedAccent = LEGACY_ACCENT_COLORS[legacyAccent] ?? legacyAccent
 
   return {
     fontSizePx: LEGACY_FONT_SIZE_PX[legacyFont] ?? DEFAULT_SETTINGS.fontSizePx,
-    bgColor: LEGACY_BG_COLORS[legacyBg] ?? legacyBg,
-    accentColor: LEGACY_ACCENT_COLORS[legacyAccent] ?? legacyAccent,
+    bgColor: sanitizeHexColor(resolvedBg, DEFAULT_SETTINGS.bgColor),
+    accentColor: sanitizeHexColor(resolvedAccent, DEFAULT_SETTINGS.accentColor),
     textColor: DEFAULT_SETTINGS.textColor,
     contrastMode,
     etaDisplayMode: DEFAULT_SETTINGS.etaDisplayMode,
